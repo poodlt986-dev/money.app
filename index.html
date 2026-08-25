@@ -64,6 +64,14 @@
         .edit-toggle-btn { background: none; border: none; color: var(--primary); font-size: 0.8rem; font-weight: 600; cursor: pointer; }
         .edit-toggle-btn.active { background: var(--primary); color: white; padding: 4px 8px; border-radius: 6px; }
         
+        /* Accordion UI */
+        .accordion { background: var(--card-bg); border-radius: 16px; box-shadow: var(--shadow-sm); margin-bottom: 1rem; overflow: hidden; }
+        .accordion-header { padding: 1.1rem 1.2rem; font-weight: 600; font-size: 1rem; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
+        .accordion-header i { color: var(--text-muted); transition: transform 0.2s; font-size: 0.8rem; }
+        .accordion.open .accordion-header i { transform: rotate(180deg); }
+        .accordion-body { padding: 0 1rem 1rem; display: none; }
+        .accordion.open .accordion-body { display: block; }
+
         .tx-item { background: var(--card-bg); display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.2rem; border-radius: 14px; margin-bottom: 0.5rem; box-shadow: var(--shadow-sm); position: relative; }
         .tx-icon { width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; margin-right: 0.8rem; flex-shrink: 0; font-size: 1.1rem; }
         .tx-icon.income { background: rgba(52, 199, 89, 0.1); color: var(--income-color); }
@@ -111,8 +119,9 @@
         .btn-confirm { background: var(--primary); color: white; }
         .btn-confirm.danger { background: var(--expense-color); }
 
-        .toast { position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%) translateY(100px); background: var(--text-main); color: white; padding: 0.75rem 1.5rem; border-radius: 100px; font-size: 0.85rem; box-shadow: 0 4px 12px rgba(0,0,0,0.15); transition: transform 0.3s; z-index: 1500; max-width: 90%; text-align: center; pointer-events: none; }
-        .toast.show { transform: translateX(-50%) translateY(0); }
+        /* Fixed Toast CSS (Push down instead of translateY) */
+        .toast { position: fixed; bottom: -150px; left: 50%; transform: translateX(-50%); background: var(--text-main); color: white; padding: 0.75rem 1.5rem; border-radius: 100px; font-size: 0.85rem; box-shadow: 0 4px 12px rgba(0,0,0,0.15); transition: bottom 0.3s ease-out; z-index: 1500; max-width: 90%; text-align: center; pointer-events: none; opacity: 0; }
+        .toast.show { bottom: 100px; opacity: 1; }
         
         .empty-state { text-align: center; padding: 2rem 1rem; color: var(--text-muted); }
         .empty-state i { font-size: 2rem; margin-bottom: 1rem; opacity: 0.15; }
@@ -149,6 +158,7 @@
         <div class="budget-icon"><i class="fas fa-coins"></i></div>
     </div>
 
+    <!-- Page Home -->
     <div class="page active" id="page-home">
         <div class="card-box">
             <div class="type-toggle">
@@ -180,6 +190,7 @@
         <div id="recent-list"></div>
     </div>
 
+    <!-- Page History -->
     <div class="page" id="page-history">
         <div class="section-title">
             <span data-i18n="all_history">ประวัติทั้งหมด</span>
@@ -188,53 +199,87 @@
         <div id="full-history-list"></div>
     </div>
 
+    <!-- Page Finance (Redesigned with Accordion) -->
     <div class="page" id="page-finance">
-        <div class="section-title">📅 <span data-i18n="monthly_bills">บิลประจำเดือน</span></div>
-        <div class="card-box">
-            <div class="form-group">
-                <input type="text" id="bill-name" class="input-field" data-i18n-ph="bill_name_ph" placeholder="ชื่อบิล (เช่น ค่าหอ)">
-                <input type="number" id="bill-amount" class="input-field" data-i18n-ph="amount_ph" placeholder="จำนวนเงิน" inputmode="decimal">
+        
+        <!-- Bills Accordion -->
+        <div class="accordion open" id="acc-bills">
+            <div class="accordion-header" onclick="toggleAccordion('acc-bills')">
+                <span>📅 <span data-i18n="monthly_bills">บิลประจำเดือน</span></span>
+                <i class="fas fa-chevron-down"></i>
             </div>
-            <div class="form-group">
-                <input type="number" id="bill-day" class="input-field" data-i18n-ph="due_day_ph" placeholder="ครบกำหนดวันที่ (1-31)" min="1" max="31">
+            <div class="accordion-body">
+                <div class="form-group">
+                    <input type="text" id="bill-name" class="input-field" data-i18n-ph="bill_name_ph" placeholder="ชื่อบิล (เช่น ค่าหอ)">
+                    <input type="number" id="bill-amount" class="input-field" data-i18n-ph="amount_ph" placeholder="จำนวนเงิน" inputmode="decimal">
+                </div>
+                <div class="form-group">
+                    <input type="number" id="bill-day" class="input-field" data-i18n-ph="due_day_ph" placeholder="ครบกำหนดวันที่ (1-31)" min="1" max="31">
+                </div>
+                <button type="button" class="btn-primary" id="add-bill-btn" style="background:#5856d6;"><i class="fas fa-plus"></i> <span data-i18n="add_bill">เพิ่มบิล</span></button>
+                <div id="bill-list" style="margin-top:1rem;"></div>
             </div>
-            <button type="button" class="btn-primary" id="add-bill-btn" style="background:#5856d6;"><i class="fas fa-plus"></i> <span data-i18n="add_bill">เพิ่มบิล</span></button>
         </div>
-        <div id="bill-list"></div>
 
-        <div class="section-title">📱 <span data-i18n="installments">สินค้าผ่อนชำระ</span></div>
-        <div class="card-box">
-            <div class="form-group">
-                <input type="text" id="inst-name" class="input-field" data-i18n-ph="item_name_ph" placeholder="ชื่อสินค้า (เช่น iPhone)">
-                <input type="number" id="inst-monthly" class="input-field" data-i18n-ph="monthly_ph" placeholder="ค่างวด/เดือน" inputmode="decimal">
+        <!-- Installments Accordion -->
+        <div class="accordion" id="acc-inst">
+            <div class="accordion-header" onclick="toggleAccordion('acc-inst')">
+                <span>📱 <span data-i18n="installments">สินค้าผ่อนชำระ</span></span>
+                <i class="fas fa-chevron-down"></i>
             </div>
-            <div class="form-group">
-                <input type="number" id="inst-total" class="input-field" data-i18n-ph="total_months_ph" placeholder="จำนวนงวด" inputmode="decimal">
-                <input type="number" id="inst-day" class="input-field" data-i18n-ph="due_day_ph" placeholder="ครบกำหนดวันที่ (1-31)" min="1" max="31">
+            <div class="accordion-body">
+                <div class="form-group">
+                    <input type="text" id="inst-name" class="input-field" data-i18n-ph="item_name_ph" placeholder="ชื่อสินค้า (เช่น iPhone)">
+                    <input type="number" id="inst-monthly" class="input-field" data-i18n-ph="monthly_ph" placeholder="ค่างวด/เดือน" inputmode="decimal">
+                </div>
+                <div class="form-group">
+                    <input type="number" id="inst-total" class="input-field" data-i18n-ph="total_months_ph" placeholder="จำนวนงวด" inputmode="decimal">
+                    <input type="number" id="inst-day" class="input-field" data-i18n-ph="due_day_ph" placeholder="ครบกำหนดวันที่ (1-31)" min="1" max="31">
+                </div>
+                <button type="button" class="btn-primary" id="add-inst-btn" style="background: var(--primary);"><i class="fas fa-plus"></i> <span data-i18n="add_inst">เพิ่มรายการผ่อน</span></button>
+                <div id="installment-list" style="margin-top:1rem;"></div>
             </div>
-            <button type="button" class="btn-primary" id="add-inst-btn" style="background: var(--primary);"><i class="fas fa-plus"></i> <span data-i18n="add_inst">เพิ่มรายการผ่อน</span></button>
         </div>
-        <div id="installment-list"></div>
 
-        <div class="section-title">🐷 <span data-i18n="savings_goal">เป้าหมายออม (ซ่อนเงิน)</span></div>
-        <div class="card-box">
-            <div class="form-group">
-                <input type="text" id="sav-name" class="input-field" data-i18n-ph="goal_name_ph" placeholder="เป้าหมาย (เช่น ซื้อ iPad)">
-                <input type="number" id="sav-amount" class="input-field" data-i18n-ph="amount_to_hide_ph" placeholder="เอาไปซ่อนกี่บาท" inputmode="decimal">
+        <!-- Savings Accordion -->
+        <div class="accordion" id="acc-sav">
+            <div class="accordion-header" onclick="toggleAccordion('acc-sav')">
+                <span>🐷 <span data-i18n="savings_goal">เป้าหมายออม (ซ่อนเงิน)</span></span>
+                <i class="fas fa-chevron-down"></i>
             </div>
-            <button type="button" class="btn-primary" id="add-sav-btn" style="background: var(--income-color);"><i class="fas fa-piggy-bank"></i> <span data-i18n="hide_money">เอาเงินไปซ่อน</span></button>
+            <div class="accordion-body">
+                <div class="form-group">
+                    <input type="text" id="sav-name" class="input-field" data-i18n-ph="goal_name_ph" placeholder="เป้าหมาย (เช่น ซื้อ iPad)">
+                    <input type="number" id="sav-amount" class="input-field" data-i18n-ph="amount_to_hide_ph" placeholder="เอาไปซ่อนกี่บาท" inputmode="decimal">
+                </div>
+                <button type="button" class="btn-primary" id="add-sav-btn" style="background: var(--income-color);"><i class="fas fa-piggy-bank"></i> <span data-i18n="hide_money">เอาเงินไปซ่อน</span></button>
+                <div id="savings-list" style="margin-top:1rem;"></div>
+            </div>
         </div>
-        <div id="savings-list"></div>
 
-        <div class="section-title">🤝 <span data-i18n="debts">หนี้ค้างจ่าย</span></div>
-        <div id="debt-list"></div>
+        <!-- Debts Accordion -->
+        <div class="accordion" id="acc-debt">
+            <div class="accordion-header" onclick="toggleAccordion('acc-debt')">
+                <span>🤝 <span data-i18n="debts">หนี้ค้างจ่าย</span></span>
+                <i class="fas fa-chevron-down"></i>
+            </div>
+            <div class="accordion-body">
+                <div id="debt-list"></div>
+            </div>
+        </div>
 
-        <div class="section-title">💾 <span data-i18n="backup_settings">สำรองข้อมูล & ตั้งค่า</span></div>
-        <div class="card-box">
-            <button type="button" class="btn-secondary" id="export-btn"><i class="fas fa-download"></i> <span data-i18n="export_data">โหลดไฟล์สำรองข้อมูล</span></button>
-            <button type="button" class="btn-secondary" id="import-btn" style="margin-top:0.5rem;"><i class="fas fa-upload"></i> <span data-i18n="import_data">นำเข้าไฟล์สำรองข้อมูล</span></button>
-            <input type="file" id="import-file" accept=".json" style="display:none;">
-            <button type="button" class="btn-danger" id="reset-btn"><i class="fas fa-trash-alt"></i> <span data-i18n="reset_all">รีเซ็ตข้อมูลทั้งหมด</span></button>
+        <!-- Settings Accordion -->
+        <div class="accordion" id="acc-set">
+            <div class="accordion-header" onclick="toggleAccordion('acc-set')">
+                <span>💾 <span data-i18n="backup_settings">สำรองข้อมูล & ตั้งค่า</span></span>
+                <i class="fas fa-chevron-down"></i>
+            </div>
+            <div class="accordion-body">
+                <button type="button" class="btn-secondary" id="export-btn"><i class="fas fa-download"></i> <span data-i18n="export_data">โหลดไฟล์สำรองข้อมูล</span></button>
+                <button type="button" class="btn-secondary" id="import-btn" style="margin-top:0.5rem;"><i class="fas fa-upload"></i> <span data-i18n="import_data">นำเข้าไฟล์สำรองข้อมูล</span></button>
+                <input type="file" id="import-file" accept=".json" style="display:none;">
+                <button type="button" class="btn-danger" id="reset-btn"><i class="fas fa-trash-alt"></i> <span data-i18n="reset_all">รีเซ็ตข้อมูลทั้งหมด</span></button>
+            </div>
         </div>
 
         <div class="watermark">Dev by Phudit</div>
@@ -339,19 +384,17 @@
         }
     };
 
-    // --- Safe Storage & State ---
     function safeGet(key, fallback) { try { const d = localStorage.getItem(key); return d ? JSON.parse(d) : fallback; } catch (e) { return fallback; } }
     function safeSet(key, data) { try { localStorage.setItem(key, JSON.stringify(data)); } catch (e) {} }
 
     let state = safeGet('ff_state_v2', { transactions: [], installments: [], bills: [], savings: [], dailyBudget: 0, lang: 'th' });
-    if (!state.lang) state.lang = 'th'; // Fallback for old saves
+    if (!state.lang) state.lang = 'th'; 
     let currentType = 'expense';
     let actionTarget = null;
     let toastTimer = null;
     const $ = id => document.getElementById(id);
     const t = key => translations[state.lang][key] || key;
 
-    // --- Language Logic ---
     function applyTranslations() {
         document.querySelectorAll('[data-i18n]').forEach(el => {
             const key = el.getAttribute('data-i18n');
@@ -368,6 +411,11 @@
         state.lang = state.lang === 'th' ? 'en' : 'th';
         save(); applyTranslations(); renderAll();
     });
+
+    // --- Accordion Logic ---
+    window.toggleAccordion = function(id) {
+        $(id).classList.toggle('open');
+    }
 
     // --- Navigation ---
     document.querySelectorAll('.nav-btn').forEach(btn => {
@@ -426,7 +474,6 @@
     const getLocale = () => state.lang === 'th' ? 'th-TH' : 'en-US';
     const getDateStr = (ts) => new Date(ts).toLocaleDateString(getLocale(), { day: '2-digit', month: 'short' });
 
-    // --- Add Transactions ---
     $('add-btn').addEventListener('click', () => {
         const desc = $('description').value.trim() || (currentType === 'income' ? t('general_income') : t('general_expense'));
         const amt = parseFloat($('amount').value.replace(/[^0-9.]/g, ''));
@@ -469,7 +516,6 @@
         showToast(t('toast_sav_added')); renderAll();
     });
 
-    // --- Modals ---
     function openActionModal(title, desc, target, showInput = false, isDanger = false) {
         actionTarget = target;
         $('action-title').innerText = title; $('action-desc').innerText = desc;
@@ -552,7 +598,6 @@
         $('action-modal').classList.remove('show'); save(); renderAll();
     });
 
-    // --- Notifications ---
     function checkNotifications() {
         const today = new Date(); const currentDay = today.getDate();
         const currentMonth = today.toLocaleString('en-US', { month: '2-digit', year: 'numeric' });
@@ -583,7 +628,6 @@
         }
     }
 
-    // --- Render ---
     function updateUI() {
         const mainBalance = calculateMainBalance();
         const savingsTotal = state.savings.reduce((acc, s) => acc + s.current, 0);
@@ -594,7 +638,10 @@
         $('balance-sub').innerText = `${t('real_money')} ${fmt(mainBalance)} | ${t('hidden_money')} ${fmt(savingsTotal)}`;
 
         const todayStr = new Date().toDateString();
-        const todayExpense = state.transactions.filter(tx => tx.type === 'expense' && !tx.subtype && new Date(tx.timestamp).toDateString() === todayStr).reduce((acc, tx) => acc + tx.amount, 0);
+        // แก้ไขจุดนี้: กรองเฉพาะค่าใช้จ่ายที่ไม่ใช่บิลและไม่ใช่ของผ่อนเท่านั้น
+        const todayExpense = state.transactions.filter(tx => 
+            tx.type === 'expense' && tx.subtype !== 'bill' && tx.subtype !== 'inst' && new Date(tx.timestamp).toDateString() === todayStr
+        ).reduce((acc, tx) => acc + tx.amount, 0);
 
         if (state.dailyBudget > 0) {
             const remaining = state.dailyBudget - todayExpense;
@@ -635,7 +682,6 @@
     function renderFinancePage() {
         const currentMonth = new Date().toLocaleString('en-US', { month: '2-digit', year: 'numeric' });
 
-        // Bills
         const billContainer = $('bill-list');
         if (state.bills.length === 0) billContainer.innerHTML = `<div class="empty-state" style="padding:1rem;"><i class="fas fa-file-invoice"></i><p>${t('no_bills')}</p></div>`;
         else {
@@ -645,7 +691,6 @@
             }).join('');
         }
 
-        // Installments
         const instContainer = $('installment-list');
         if (state.installments.length === 0) instContainer.innerHTML = `<div class="empty-state" style="padding:1rem;"><i class="fas fa-mobile-alt"></i><p>${t('no_inst')}</p></div>`;
         else {
@@ -657,7 +702,6 @@
             }).join('');
         }
 
-        // Savings
         const savContainer = $('savings-list');
         if (state.savings.length === 0) savContainer.innerHTML = `<div class="empty-state" style="padding:1rem;"><i class="fas fa-piggy-bank"></i><p>${t('no_savings')}</p></div>`;
         else {
@@ -666,7 +710,6 @@
             }).join('');
         }
 
-        // Debts
         const debts = state.transactions.filter(tx => tx.type === 'debt');
         $('debt-list').innerHTML = debts.length === 0 ? `<div class="empty-state" style="padding:1rem;"><i class="fas fa-handshake"></i><p>${t('no_debts')}</p></div>` : debts.map(tx => `<div class="tx-item"><div class="delete-btn" onclick="openActionModal('${t('confirm_delete_title')}','${tx.description.replace(/'/g, "\\'")}', {id:${tx.id},type:'tx',action:'delete'}, false, true)"><i class="fas fa-times"></i></div><div class="tx-icon debt"><i class="fas fa-hand-holding-usd"></i></div><div class="tx-info"><span>${tx.description}</span><small>${t('remaining_text')} ${fmt((tx.totalAmount||0)-(tx.paidAmount||0))} / ${t('total_text')} ${fmt(tx.totalAmount||0)}</small></div><div class="tx-right">${!tx.settled ? `<button onclick="openActionModal('${t('settle_debt_title')}','${t('settle_debt_desc')}', {id:${tx.id},type:'tx',action:'payDebt'}, true)" class="action-btn-sm warn">${t('settle_debt')}</button>` : `<small style="color:#ccc;">${t('settled')}</small>`}</div></div>`).join('');
     }
@@ -678,7 +721,6 @@
         renderFinancePage();
     }
 
-    // --- Backup & Reset ---
     $('export-btn').addEventListener('click', () => {
         const dataStr = JSON.stringify(state); const blob = new Blob([dataStr], { type: "application/json" });
         const url = URL.createObjectURL(blob); const a = document.createElement('a');
@@ -694,7 +736,7 @@
             try { 
                 const importedState = JSON.parse(event.target.result);
                 state = importedState; 
-                if (!state.lang) state.lang = 'th'; // Fallback
+                if (!state.lang) state.lang = 'th'; 
                 save(); applyTranslations(); renderAll(); showToast(t('toast_imported')); 
             }
             catch (err) { showToast(t('toast_invalid_file'), true); }
@@ -705,7 +747,7 @@
         openConfirmModal(t('confirm_reset_title'), t('confirm_reset_desc'), {action: 'reset'}, true);
     });
 
-    // --- Toast Fixed ---
+    // --- Fixed Toast Logic ---
     function showToast(msg, isError = false) {
         const tEl = $('toast');
         tEl.innerText = msg;
@@ -717,7 +759,6 @@
 
     function save() { safeSet('ff_state_v2', state); }
     
-    // Init
     applyTranslations();
     renderAll();
 </script>
