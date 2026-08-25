@@ -614,7 +614,7 @@
             const subtype = $('split-type').value;
             
             if (subtype === 'lend') {
-                // 1. หักเงินเต็มจำนวนที่จ่ายไปจากกระเป๋าเลย (เพราะเราเป็นคนจ่ายให้ร้าน)
+                // 1. Deduct full amount paid to the shop
                 state.transactions.unshift({
                     id: Date.now(),
                     description: desc,
@@ -624,7 +624,7 @@
                     timestamp: Date.now()
                 });
                 
-                // 2. บันทึกหนี้ที่เพื่อนค้างเรา (ไม่หักเงินซ้ำ)
+                // 2. Record debt owed by friends
                 const debtAmount = amt - myShare;
                 if (debtAmount > 0) {
                     state.transactions.unshift({
@@ -639,11 +639,11 @@
                         timestamp: Date.now()
                     });
                 }
-            } else { // borrow (เพื่อนจ่ายให้)
-                // 1. ไม่หักเงินตอนนี้ (เพราะเรายังไม่ได้จ่าย) แค่บันทึกหนี้ที่เราค้างเพื่อน
+            } else { // borrow
+                // 1. Record debt owed to friend
                 if (myShare > 0) {
                     state.transactions.unshift({
-                        id: Date.Now(),
+                        id: Date.now(),
                         description: `${desc} (${t('people_ph').split(' ')[0]} ${people})`,
                         type: 'debt',
                         subtype: 'borrow',
@@ -656,7 +656,7 @@
                 }
             }
         } else {
-            let newTx = { id: Date.Now(), description: desc, amount: amt, type: currentType, dateStr: getDateStr(Date.Now()), timestamp: Date.Now() };
+            let newTx = { id: Date.now(), description: desc, amount: amt, type: currentType, dateStr: getDateStr(Date.now()), timestamp: Date.now() };
             state.transactions.unshift(newTx);
         }
         
@@ -669,7 +669,7 @@
     $('add-bill-btn').addEventListener('click', () => {
         const name = $('bill-name').value.trim(); const amount = parseFloat($('bill-amount').value); const day = parseInt($('bill-day').value);
         if (!name || isNaN(amount) || isNaN(day) || day < 1 || day > 31) return showToast(t('toast_invalid_bill'), true);
-        state.bills.push({ id: Date.Now(), name, amount, dueDay: day, lastPaid: '' });
+        state.bills.push({ id: Date.now(), name, amount, dueDay: day, lastPaid: '' });
         save(); $('bill-name').value=''; $('bill-amount').value=''; $('bill-day').value='';
         showToast(t('toast_bill_added')); renderAll();
     });
@@ -678,7 +678,7 @@
         const name = $('inst-name').value.trim(); const monthly = parseFloat($('inst-monthly').value);
         const total = parseInt($('inst-total').value); const day = parseInt($('inst-day').value) || 1;
         if (!name || isNaN(monthly) || isNaN(total)) return showToast(t('toast_invalid_inst'), true);
-        state.installments.push({ id: Date.Now(), name, monthly, totalMonths: total, paidMonths: 0, dueDay: day, lastPaidMonth: '' });
+        state.installments.push({ id: Date.now(), name, monthly, totalMonths: total, paidMonths: 0, dueDay: day, lastPaidMonth: '' });
         save(); $('inst-name').value=''; $('inst-monthly').value=''; $('inst-total').value=''; $('inst-day').value='';
         showToast(t('toast_inst_added')); renderAll();
     });
@@ -686,8 +686,8 @@
     $('add-sav-btn').addEventListener('click', () => {
         const name = $('sav-name').value.trim(); const amount = parseFloat($('sav-amount').value);
         if (!name || isNaN(amount) || amount <= 0) return showToast(t('toast_invalid_sav'), true);
-        state.savings.push({ id: Date.Now(), name, current: amount });
-        state.transactions.unshift({ id: Date.Now()+1, description: `${t('hide_money')}: ${name}`, amount, type: 'expense', subtype: 'savings', dateStr: getDateStr(Date.Now()), timestamp: Date.Now() });
+        state.savings.push({ id: Date.now(), name, current: amount });
+        state.transactions.unshift({ id: Date.now()+1, description: `${t('hide_money')}: ${name}`, amount, type: 'expense', subtype: 'savings', dateStr: getDateStr(Date.now()), timestamp: Date.now() });
         save(); $('sav-name').value=''; $('sav-amount').value='';
         showToast(t('toast_sav_added')); renderAll();
     });
@@ -734,7 +734,7 @@
     $('confirm-panic').addEventListener('click', () => {
         const price = parseFloat($('panic-input').value.replace(/[^0-9.]/g, '')) || 0;
         if (price > 0) {
-            state.transactions.unshift({ id: Date.Now(), description: t('panic_buy'), amount: price, type: 'expense', dateStr: getDateStr(Date.Now()), timestamp: Date.Now() });
+            state.transactions.unshift({ id: Date.now(), description: t('panic_buy'), amount: price, type: 'expense', dateStr: getDateStr(Date.now()), timestamp: Date.now() });
             save(); renderAll();
             showToast(t('toast_saved'));
         }
@@ -788,7 +788,7 @@
         if (!actionTarget) return;
         if (actionTarget.action === 'reset') {
             $('confirm-modal').classList.remove('show');
-            state = { transactions: [], installments: [], bills: [], savings: [], dailyBudget: 0, lang: state.lang, theme: state.theme, createdAt: Date.Now() };
+            state = { transactions: [], installments: [], bills: [], savings: [], dailyBudget: 0, lang: state.lang, theme: state.theme, createdAt: Date.now() };
             save(); 
             showToast(t('toast_reset_done'));
             renderAll();
@@ -807,7 +807,7 @@
             else if (type === 'bill') state.bills = state.bills.filter(b => b.id !== id);
             else if (type === 'sav') {
                 let sav = state.savings.find(s => s.id === id);
-                if (sav) state.transactions.unshift({ id: Date.Now(), description: `${t('cancel_hide_money')}: ${sav.name}`, amount: sav.current, type: 'income', subtype: 'savings', dateStr: getDateStr(Date.Now()), timestamp: Date.Now() });
+                if (sav) state.transactions.unshift({ id: Date.now(), description: `${t('cancel_hide_money')}: ${sav.name}`, amount: sav.current, type: 'income', subtype: 'savings', dateStr: getDateStr(Date.now()), timestamp: Date.now() });
                 state.savings = state.savings.filter(s => s.id !== id);
             }
             showToast(t('toast_deleted'));
@@ -816,7 +816,7 @@
             let inst = state.installments.find(i => i.id === id);
             if (inst && inst.paidMonths < inst.totalMonths) {
                 inst.paidMonths++; inst.lastPaidMonth = currentMonth;
-                state.transactions.unshift({ id: Date.Now(), description: `${t('inst_paid_prefix')} ${inst.name} (${inst.paidMonths}/${inst.totalMonths})`, amount: inst.monthly, type: 'expense', subtype: 'inst', dateStr: getDateStr(Date.Now()), timestamp: Date.Now() });
+                state.transactions.unshift({ id: Date.now(), description: `${t('inst_paid_prefix')} ${inst.name} (${inst.paidMonths}/${inst.totalMonths})`, amount: inst.monthly, type: 'expense', subtype: 'inst', dateStr: getDateStr(Date.now()), timestamp: Date.now() });
                 showToast(t('toast_inst_paid'));
             }
         }
@@ -824,14 +824,14 @@
             let bill = state.bills.find(b => b.id === id);
             if (bill) {
                 bill.lastPaid = currentMonth;
-                state.transactions.unshift({ id: Date.Now(), description: `${t('bill_paid_prefix')} ${bill.name}`, amount: bill.amount, type: 'expense', subtype: 'bill', dateStr: getDateStr(Date.Now()), timestamp: Date.Now() });
+                state.transactions.unshift({ id: Date.now(), description: `${t('bill_paid_prefix')} ${bill.name}`, amount: bill.amount, type: 'expense', subtype: 'bill', dateStr: getDateStr(Date.now()), timestamp: Date.now() });
                 showToast(t('toast_bill_paid'));
             }
         }
         else if (action === 'withdrawSav') {
             let sav = state.savings.find(s => s.id === id);
             if (sav) {
-                state.transactions.unshift({ id: Date.Now(), description: `${t('withdraw_prefix')}: ${sav.name}`, amount: sav.current, type: 'income', subtype: 'savings', dateStr: getDateStr(Date.Now()), timestamp: Date.Now() });
+                state.transactions.unshift({ id: Date.now(), description: `${t('withdraw_prefix')}: ${sav.name}`, amount: sav.current, type: 'income', subtype: 'savings', dateStr: getDateStr(Date.now()), timestamp: Date.now() });
                 state.savings = state.savings.filter(s => s.id !== id);
                 showToast(t('toast_withdraw_done'));
             }
@@ -845,10 +845,8 @@
             if (payVal > remaining) return showToast(t('toast_amount_exceeds'), true);
             tx.paidAmount = (tx.paidAmount || 0) + payVal;
             if (tx.paidAmount >= tx.totalAmount) tx.settled = true;
-            // ถ้าเพื่อนค้างเรา (lend) เราจะได้เงินคืน = รายรับ
-            if (tx.subtype === 'lend') state.transactions.unshift({ id: Date.Now(), description: t('friend_returned'), amount: payVal, type: 'income', dateStr: getDateStr(Date.Now()), timestamp: Date.Now() });
-            // ถ้าเราค้างเพื่อน (borrow) เราต้องจ่ายเงินคืน = รายจ่าย
-            else state.transactions.unshift({ id: Date.Now(), description: t('i_returned'), amount: payVal, type: 'expense', dateStr: getDateStr(Date.Now()), timestamp: Date.Now() });
+            if (tx.subtype === 'lend') state.transactions.unshift({ id: Date.now(), description: t('friend_returned'), amount: payVal, type: 'income', dateStr: getDateStr(Date.now()), timestamp: Date.now() });
+            else state.transactions.unshift({ id: Date.now(), description: t('i_returned'), amount: payVal, type: 'expense', dateStr: getDateStr(Date.now()), timestamp: Date.now() });
             showToast(t('toast_debt_settled'));
         }
         $('action-modal').classList.remove('show'); 
@@ -1100,7 +1098,7 @@
                 state = importedState; 
                 if (!state.lang) state.lang = 'th'; 
                 if (!state.theme) state.theme = 'light';
-                if (!state.createdAt) state.createdAt = Date.Now();
+                if (!state.createdAt) state.createdAt = Date.now();
                 save(); applyTheme(); applyTranslations(); renderAll(); showToast(t('toast_imported')); 
             }
             catch (err) { showToast(t('toast_invalid_file'), true); }
