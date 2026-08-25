@@ -197,7 +197,7 @@
     <div class="streak-card" id="streak-card">
         <div class="streak-info">
             <small data-i18n="saving_streak">วันที่ประหยัดได้ (30 วันล่าสุด)</small>
-            <div class="streak-amount"><span id="streak-count">0</span> / 30 <span data-i18n="days_word">วัน</span></div>
+            <div class="streak-amount" id="streak-amount-container">0 / 30 วัน</div>
         </div>
         <div class="streak-icon">🌟</div>
     </div>
@@ -409,6 +409,7 @@
             settled: "เคลียร์แล้ว", paid: "จ่ายแล้ว", due_on: "ครบกำหนดวันที่", of_every_month: "ของทุกเดือน", monthly: "ผ่อนเดือนละ", installments_short: "งวด", money_hidden_here: "เก็บเงินส่วนนี้ไว้",
             remaining_text: "เหลือ", total_text: "รวม", round_up_sav_name: "เงินออมปัดเศษ",
             today_word: "วันนี้", overdue_word: "เกินกำหนด", no_chart_data: "ยังไม่มีข้อมูลค่าใช้จ่าย",
+            no_tx: "ยังไม่มีรายการ", no_bills: "ไม่มีบิลประจำเดือน", no_inst: "ไม่มีสินค้าผ่อน", no_savings: "ยังไม่ได้ซ่อนเงินไว้", no_debts: "ไม่มีหนี้ค้างจ่าย",
             toast_saved: "บันทึกสำเร็จ!", toast_amount_req: "ใส่จำนวนเงินหน่อยนะ!", toast_budget_saved: "บันทึกงบประมาณแล้ว", toast_budget_reset: "รีเซ็ตงบประมาณเรียบร้อยแล้ว", toast_need_income: "ต้องมีรายรับก่อน ถึงจะตั้งงบประมาณได้นะ!",
             prompt_budget: "ตั้งงบประมาณใช้จ่ายสูงสุดต่อวัน (บาท):", toast_budget_gt0: "งบประมาณต้องมากกว่า 0", toast_round_up: "ปัดเศษเก็บออมให้แล้ว:",
             toast_bill_added: "เพิ่มบิลสำเร็จ!", toast_invalid_bill: "กรอกข้อมูลบิลให้ถูกต้อง", toast_inst_added: "เพิ่มรายการผ่อนสำเร็จ!", toast_invalid_inst: "กรอกข้อมูลผ่อนสินค้าให้ครบ", toast_sav_added: "ซ่อนเงินเรียบร้อย!", toast_invalid_sav: "กรอกข้อมูลการออมให้ถูกต้อง",
@@ -441,6 +442,7 @@
             settled: "Settled", paid: "Paid", due_on: "Due on", of_every_month: "of every month", monthly: "Monthly", installments_short: "months", money_hidden_here: "Money hidden here",
             remaining_text: "Remaining", total_text: "Total", round_up_sav_name: "Round-up Savings",
             today_word: "Today", days_word: "days", overdue_word: "Overdue", no_chart_data: "No expense data yet",
+            no_tx: "No transactions yet", no_bills: "No monthly bills", no_inst: "No installments", no_savings: "No hidden savings", no_debts: "No debts",
             toast_saved: "Saved successfully!", toast_amount_req: "Please enter an amount!", toast_budget_saved: "Budget saved", toast_budget_reset: "Daily budget reset successfully", toast_need_income: "You need income before setting a budget!",
             prompt_budget: "Set maximum daily budget (THB):", toast_budget_gt0: "Budget must be greater than 0", toast_round_up: "Round-up saved:",
             toast_bill_added: "Bill added!", toast_invalid_bill: "Please enter valid bill data", toast_inst_added: "Installment added!", toast_invalid_inst: "Please enter valid installment data", toast_sav_added: "Money hidden!", toast_invalid_sav: "Please enter valid savings data",
@@ -453,7 +455,6 @@
         }
     };
 
-    // เพิ่มสีให้แตกต่างกันชัดเจน + เพิ่มคำว่า โรงแรม ใน housing
     const categories = {
         food: { name_th: "อาหาร", name_en: "Food", icon: "🍔", color: "#FF6384", keywords: ["ข้าว", "ก๋วยเตี๋ยว", "มาม่า", "อาหาร", "กิน", "ชา", "กาแฟ", "นม", "น้ำ", "โค้ก", "สตาร์บัค", "ขนม", "ไอศครีม", "ส้มตำ", "หมูกระทะ", "สเต็ก", "ข้าวมันไก่", "ผลไม้", "ชาบู", "หมู", "ไก่", "เป็ด", "ปลา", "เบอร์เกอร์", "แมคโคร", "เคเอฟซี", "kfc", "พิซซ่า", "สุกี้", "ยำ", "ราดหน้า", "ผัด", "ทอด", "ปิ้ง", "ย่าง", "เซเว่น", "ครอบครัว", "โลตัส", "บิ๊กซี", "ท็อปส์", "จิฟฟี่", "สแน็ค", "ขนมปัง", "ชีส", "ไข่", "ผัก", "ชานม", "โอวัลติน", "มิโล", "นมถั่วเหลือง", "นมเย็น", "ชาเย็น", "กาแฟเย็น", "เอสเปรสโซ", "ลาเต้", "อเมริโก", "มอคค่า", "คาปูชิโน", "food", "eat", "drink", "coffee", "tea", "milk", "water", "coke", "starbucks", "snack", "icecream", "somtum", "bbq", "steak", "fruit", "mcdonalds", "pizza", "seven", "lotus", "bigc", "tops", "jiffy", "bread", "cheese", "egg", "vegetable", "latte", "espresso", "americano", "breakfast", "lunch", "dinner"] },
         transport: { name_th: "เดินทาง", name_en: "Transport", icon: "🚆", color: "#36A2EB", keywords: ["รถเมล์", "รถไฟ", "บีทีเอส", "bts", "mrt", "แท็กซี่", "มอเตอร์ไซค์", "มอเตอร์", "รถตู้", "เรือ", "น้ำมัน", "แก๊ส", "ชาร์จ", "ป้าย", "จอด", "ทางด่วน", "สถานี", "ท่า", "bus", "train", "taxi", "motorbike", "van", "boat", "oil", "gas", "charge", "park", "expressway", "station", "pier", "grab", "bolt", "fuel"] },
@@ -470,7 +471,7 @@
     let state = safeGet('ff_state_v2', { transactions: [], installments: [], bills: [], savings: [], dailyBudget: 0, lang: 'th', theme: 'light', createdAt: Date.now() });
     if (!state.lang) state.lang = 'th'; 
     if (!state.theme) state.theme = 'light';
-    if (!state.createdAt) state.createdAt = Date.now(); // เก็บวันที่เริ่มใช้งาน
+    if (!state.createdAt) state.createdAt = Date.now();
     let currentType = 'expense';
     let actionTarget = null;
     let toastTimer = null;
@@ -634,7 +635,7 @@
         const name = $('sav-name').value.trim(); const amount = parseFloat($('sav-amount').value);
         if (!name || isNaN(amount) || amount <= 0) return showToast(t('toast_invalid_sav'), true);
         state.savings.push({ id: Date.now(), name, current: amount });
-        state.transactions.unshift({ id: Date.now()+1, description: `${t('hide_money')}: ${name}`, amount, type: 'expense', subtype: 'savings', dateStr: getDateStr(Date.now()), timestamp: Date.now() });
+        state.transactions.unshift({ id: Date.Now()+1, description: `${t('hide_money')}: ${name}`, amount, type: 'expense', subtype: 'savings', dateStr: getDateStr(Date.now()), timestamp: Date.now() });
         save(); $('sav-name').value=''; $('sav-amount').value='';
         showToast(t('toast_sav_added')); renderAll();
     });
@@ -689,7 +690,34 @@
         $('panic-modal').classList.remove('show');
     });
 
-    // --- Modals ---
+    // --- Safe Action & Delete Functions ---
+    window.askDelete = function(type, id) {
+        let item;
+        if (type === 'tx') item = state.transactions.find(t => t.id === id);
+        else if (type === 'inst') item = state.installments.find(i => i.id === id);
+        else if (type === 'bill') item = state.bills.find(b => b.id === id);
+        else if (type === 'sav') item = state.savings.find(s => s.id === id);
+        if (!item) return;
+
+        const desc = item.description || item.name;
+        openActionModal(t('confirm_delete_title'), desc, {id, type, action: 'delete'}, false, true);
+    };
+
+    window.askAction = function(action, type, id) {
+        let item;
+        if (type === 'tx') item = state.transactions.find(t => t.id === id);
+        else if (type === 'inst') item = state.installments.find(i => i.id === id);
+        else if (type === 'bill') item = state.bills.find(b => b.id === id);
+        else if (type === 'sav') item = state.savings.find(s => s.id === id);
+        if (!item) return;
+
+        const name = item.description || item.name;
+        if (action === 'payBill') openActionModal(t('pay_bill'), name, {id, type:'bill', action:'payBill'});
+        else if (action === 'payInst') openActionModal(t('pay_inst'), name, {id, type:'inst', action:'payInst'});
+        else if (action === 'withdrawSav') openActionModal(t('withdraw'), name, {id, type:'sav', action:'withdrawSav'});
+        else if (action === 'payDebt') openActionModal(t('settle_debt_title'), t('settle_debt_desc'), {id, type:'tx', action:'payDebt'}, true);
+    };
+
     function openActionModal(title, desc, target, showInput = false, isDanger = false) {
         actionTarget = target;
         $('action-title').innerText = title; $('action-desc').innerText = desc;
@@ -709,10 +737,12 @@
     $('confirm-action').addEventListener('click', () => {
         if (!actionTarget) return;
         if (actionTarget.action === 'reset') {
+            $('confirm-modal').classList.remove('show'); // ซ่อนก่อน
             state = { transactions: [], installments: [], bills: [], savings: [], dailyBudget: 0, lang: state.lang, theme: state.theme, createdAt: Date.now() };
-            save(); renderAll(); showToast(t('toast_reset_done'));
+            save(); 
+            showToast(t('toast_reset_done'));
+            renderAll();
         }
-        $('confirm-modal').classList.remove('show');
     });
 
     $('cancel-action-2').addEventListener('click', () => $('action-modal').classList.remove('show'));
@@ -744,14 +774,14 @@
             let bill = state.bills.find(b => b.id === id);
             if (bill) {
                 bill.lastPaid = currentMonth;
-                state.transactions.unshift({ id: Date.now(), description: `${t('bill_paid_prefix')} ${bill.name}`, amount: bill.amount, type: 'expense', subtype: 'bill', dateStr: getDateStr(Date.now()), timestamp: Date.now() });
+                state.transactions.unshift({ id: Date.Now(), description: `${t('bill_paid_prefix')} ${bill.name}`, amount: bill.amount, type: 'expense', subtype: 'bill', dateStr: getDateStr(Date.now()), timestamp: Date.now() });
                 showToast(t('toast_bill_paid'));
             }
         }
         else if (action === 'withdrawSav') {
             let sav = state.savings.find(s => s.id === id);
             if (sav) {
-                state.transactions.unshift({ id: Date.now(), description: `${t('withdraw_prefix')}: ${sav.name}`, amount: sav.current, type: 'income', subtype: 'savings', dateStr: getDateStr(Date.now()), timestamp: Date.now() });
+                state.transactions.unshift({ id: Date.Now(), description: `${t('withdraw_prefix')}: ${sav.name}`, amount: sav.current, type: 'income', subtype: 'savings', dateStr: getDateStr(Date.now()), timestamp: Date.now() });
                 state.savings = state.savings.filter(s => s.id !== id);
                 showToast(t('toast_withdraw_done'));
             }
@@ -765,11 +795,13 @@
             if (payVal > remaining) return showToast(t('toast_amount_exceeds'), true);
             tx.paidAmount = (tx.paidAmount || 0) + payVal;
             if (tx.paidAmount >= tx.totalAmount) tx.settled = true;
-            if (tx.subtype === 'lend') state.transactions.unshift({ id: Date.now(), description: t('friend_returned'), amount: payVal, type: 'income', dateStr: getDateStr(Date.now()), timestamp: Date.now() });
-            else state.transactions.unshift({ id: Date.now(), description: t('i_returned'), amount: payVal, type: 'expense', dateStr: getDateStr(Date.now()), timestamp: Date.now() });
+            if (tx.subtype === 'lend') state.transactions.unshift({ id: Date.Now(), description: t('friend_returned'), amount: payVal, type: 'income', dateStr: getDateStr(Date.now()), timestamp: Date.now() });
+            else state.transactions.unshift({ id: Date.Now(), description: t('i_returned'), amount: payVal, type: 'expense', dateStr: getDateStr(Date.now()), timestamp: Date.Now() });
             showToast(t('toast_debt_settled'));
         }
-        $('action-modal').classList.remove('show'); save(); renderAll();
+        $('action-modal').classList.remove('show'); 
+        save(); 
+        renderAll();
     });
 
     function checkNotifications() {
@@ -850,10 +882,11 @@
     }
 
     function calculateStreak() {
-        // ถ้าไม่ได้ตั้งงบประมาณ ให้แสดงข้อความแนะนำ และคะแนนเป็น 0
+        const streakEl = $('streak-amount-container');
+        if (!streakEl) return;
+        
         if (state.dailyBudget <= 0) {
-            $('streak-count').innerText = 0;
-            $('streak-card').querySelector('.streak-amount').innerHTML = `<small style="color:var(--text-muted); font-size:0.8rem;">${t('streak_need_budget')}</small>`;
+            streakEl.innerHTML = `<small style="color:var(--text-muted); font-size:0.8rem; font-weight:500;">${t('streak_need_budget')}</small>`;
             return;
         }
 
@@ -866,8 +899,6 @@
             const checkDate = new Date(today);
             checkDate.setDate(today.getDate() - i);
             checkDate.setHours(0,0,0,0);
-            
-            // ถ้าวันที่ตรวจสอบ น้อยกว่าวันที่เริ่มสร้างแอป ให้หยุดนับ
             if (checkDate < startCheckDate) break;
             
             const dayStr = checkDate.toDateString();
@@ -878,8 +909,7 @@
             if (dayExpense <= state.dailyBudget) savedDays++;
         }
         
-        $('streak-count').innerText = savedDays;
-        $('streak-card').querySelector('.streak-amount').innerHTML = `<span id="streak-count">${savedDays}</span> / 30 <span data-i18n="days_word">${t('days_word')}</span>`;
+        streakEl.innerText = `${savedDays} / 30 ${t('days_word')}`;
     }
 
     function updateUI() {
@@ -930,9 +960,9 @@
                 if (tx.type === 'debt') { iconClass = 'debt'; icon = tx.subtype === 'lend' ? 'hand-holding-usd' : 'hand-holding'; displayAmount = tx.totalAmount || 0; amountClass = tx.settled ? 'settled' : 'debt'; sign = tx.subtype === 'lend' ? '+' : '-'; }
                 
                 let rightContent = `<span class="tx-amount ${amountClass}">${sign}${fmt(displayAmount)}</span>`;
-                if (tx.type === 'debt' && !tx.settled) rightContent += `<button onclick="openActionModal('${t('settle_debt_title')}','${t('settle_debt_desc')}', {id:${tx.id},type:'tx',action:'payDebt'}, true)" class="action-btn-sm warn">${t('settle_debt')}</button>`;
+                if (tx.type === 'debt' && !tx.settled) rightContent += `<button onclick="askAction('payDebt', 'tx', ${tx.id})" class="action-btn-sm warn">${t('settle_debt')}</button>`;
 
-                html += `<div class="tx-item"><div class="delete-btn" onclick="openActionModal('${t('confirm_delete_title')}','${tx.description.replace(/'/g, "\\'")}', {id:${tx.id},type:'tx',action:'delete'}, false, true)"><i class="fas fa-times"></i></div><div class="tx-icon ${iconClass}"><i class="fas fa-${icon}"></i></div><div class="tx-info"><span>${tx.description}</span><small>${tx.type === 'debt' ? (tx.subtype === 'lend' ? t('friend_owes_me') : t('i_owe_friend')) : (tx.type === 'income' ? t('income') : t('expense'))}</small></div><div class="tx-right">${rightContent}</div></div>`;
+                html += `<div class="tx-item"><div class="delete-btn" onclick="askDelete('tx', ${tx.id})"><i class="fas fa-times"></i></div><div class="tx-icon ${iconClass}"><i class="fas fa-${icon}"></i></div><div class="tx-info"><span>${tx.description}</span><small>${tx.type === 'debt' ? (tx.subtype === 'lend' ? t('friend_owes_me') : t('i_owe_friend')) : (tx.type === 'income' ? t('income') : t('expense'))}</small></div><div class="tx-right">${rightContent}</div></div>`;
             });
         }
         container.innerHTML = html;
@@ -946,7 +976,7 @@
         else {
             billContainer.innerHTML = state.bills.map(b => {
                 const isPaid = b.lastPaid === currentMonth;
-                return `<div class="tx-item"><div class="delete-btn" onclick="openActionModal('${t('confirm_delete_title')}','${b.name.replace(/'/g, "\\'")}', {id:${b.id},type:'bill',action:'delete'}, false, true)"><i class="fas fa-times"></i></div><div class="tx-icon bill"><i class="fas fa-file-invoice-dollar"></i></div><div class="tx-info"><span>${b.name}</span><small>${t('due_on')} ${b.dueDay} ${t('of_every_month')}</small></div><div class="tx-right"><span class="tx-amount ${isPaid ? 'settled' : 'expense'}">${isPaid ? t('paid') : '-'+fmt(b.amount)}</span>${!isPaid ? `<button onclick="openActionModal('${t('pay_bill')}','${b.name.replace(/'/g, "\\'")}', {id:${b.id},type:'bill',action:'payBill'})" class="action-btn-sm">${t('pay_bill')}</button>` : ''}</div></div>`;
+                return `<div class="tx-item"><div class="delete-btn" onclick="askDelete('bill', ${b.id})"><i class="fas fa-times"></i></div><div class="tx-icon bill"><i class="fas fa-file-invoice-dollar"></i></div><div class="tx-info"><span>${b.name}</span><small>${t('due_on')} ${b.dueDay} ${t('of_every_month')}</small></div><div class="tx-right"><span class="tx-amount ${isPaid ? 'settled' : 'expense'}">${isPaid ? t('paid') : '-'+fmt(b.amount)}</span>${!isPaid ? `<button onclick="askAction('payBill', 'bill', ${b.id})" class="action-btn-sm">${t('pay_bill')}</button>` : ''}</div></div>`;
             }).join('');
         }
 
@@ -957,7 +987,7 @@
                 const isDone = inst.paidMonths >= inst.totalMonths;
                 const isPaidThisMonth = inst.lastPaidMonth === currentMonth;
                 const progress = (inst.paidMonths / inst.totalMonths) * 100;
-                return `<div class="tx-item" style="flex-direction:column;align-items:stretch;"><div class="delete-btn" onclick="openActionModal('${t('confirm_delete_title')}','${inst.name.replace(/'/g, "\\'")}', {id:${inst.id},type:'inst',action:'delete'}, false, true)"><i class="fas fa-times"></i></div><div style="display:flex;justify-content:space-between;width:100%;margin-bottom:8px;"><div class="tx-info" style="display:flex;align-items:center;"><div class="tx-icon inst" style="margin-right:0.8rem;"><i class="fas fa-mobile-alt"></i></div><div><span>${inst.name}</span><small>${t('monthly')} ${fmt(inst.monthly)} (${t('due_on')} ${inst.dueDay})</small></div></div><div class="tx-right"><span class="tx-amount ${isDone?'settled':''}" style="color:var(--primary);">${inst.paidMonths}/${inst.totalMonths} ${t('installments_short')}</span>${!isDone && !isPaidThisMonth?`<button onclick="openActionModal('${t('pay_inst')}','${inst.name.replace(/'/g, "\\'")}', {id:${inst.id},type:'inst',action:'payInst'})" class="action-btn-sm">${t('pay_inst')}</button>`:''}</div></div><div class="progress-bar"><div class="progress-fill" style="width:${progress}%;${isDone?'background:var(--income-color);':''}"></div></div></div>`;
+                return `<div class="tx-item" style="flex-direction:column;align-items:stretch;"><div class="delete-btn" onclick="askDelete('inst', ${inst.id})"><i class="fas fa-times"></i></div><div style="display:flex;justify-content:space-between;width:100%;margin-bottom:8px;"><div class="tx-info" style="display:flex;align-items:center;"><div class="tx-icon inst" style="margin-right:0.8rem;"><i class="fas fa-mobile-alt"></i></div><div><span>${inst.name}</span><small>${t('monthly')} ${fmt(inst.monthly)} (${t('due_on')} ${inst.dueDay})</small></div></div><div class="tx-right"><span class="tx-amount ${isDone?'settled':''}" style="color:var(--primary);">${inst.paidMonths}/${inst.totalMonths} ${t('installments_short')}</span>${!isDone && !isPaidThisMonth?`<button onclick="askAction('payInst', 'inst', ${inst.id})" class="action-btn-sm">${t('pay_inst')}</button>`:''}</div></div><div class="progress-bar"><div class="progress-fill" style="width:${progress}%;${isDone?'background:var(--income-color);':''}"></div></div></div>`;
             }).join('');
         }
 
@@ -965,12 +995,12 @@
         if (state.savings.length === 0) savContainer.innerHTML = `<div class="empty-state" style="padding:1rem;"><i class="fas fa-piggy-bank"></i><p>${t('no_savings')}</p></div>`;
         else {
             savContainer.innerHTML = state.savings.map(s => {
-                return `<div class="tx-item"><div class="delete-btn" onclick="openActionModal('${t('confirm_delete_title')}','${s.name.replace(/'/g, "\\'")}', {id:${s.id},type:'sav',action:'delete'}, false, true)"><i class="fas fa-times"></i></div><div class="tx-icon savings"><i class="fas fa-piggy-bank"></i></div><div class="tx-info"><span>${s.name}</span><small>${t('money_hidden_here')}</small></div><div class="tx-right"><span class="tx-amount income">${fmt(s.current)}</span><button onclick="openActionModal('${t('withdraw')}','${s.name.replace(/'/g, "\\'")}', {id:${s.id},type:'sav',action:'withdrawSav'})" class="action-btn-sm">${t('withdraw')}</button></div></div>`;
+                return `<div class="tx-item"><div class="delete-btn" onclick="askDelete('sav', ${s.id})"><i class="fas fa-times"></i></div><div class="tx-icon savings"><i class="fas fa-piggy-bank"></i></div><div class="tx-info"><span>${s.name}</span><small>${t('money_hidden_here')}</small></div><div class="tx-right"><span class="tx-amount income">${fmt(s.current)}</span><button onclick="askAction('withdrawSav', 'sav', ${s.id})" class="action-btn-sm">${t('withdraw')}</button></div></div>`;
             }).join('');
         }
 
         const debts = state.transactions.filter(tx => tx.type === 'debt');
-        $('debt-list').innerHTML = debts.length === 0 ? `<div class="empty-state" style="padding:1rem;"><i class="fas fa-handshake"></i><p>${t('no_debts')}</p></div>` : debts.map(tx => `<div class="tx-item"><div class="delete-btn" onclick="openActionModal('${t('confirm_delete_title')}','${tx.description.replace(/'/g, "\\'")}', {id:${tx.id},type:'tx',action:'delete'}, false, true)"><i class="fas fa-times"></i></div><div class="tx-icon debt"><i class="fas fa-hand-holding-usd"></i></div><div class="tx-info"><span>${tx.description}</span><small>${t('remaining_text')} ${fmt((tx.totalAmount||0)-(tx.paidAmount||0))} / ${t('total_text')} ${fmt(tx.totalAmount||0)}</small></div><div class="tx-right">${!tx.settled ? `<button onclick="openActionModal('${t('settle_debt_title')}','${t('settle_debt_desc')}', {id:${tx.id},type:'tx',action:'payDebt'}, true)" class="action-btn-sm warn">${t('settle_debt')}</button>` : `<small style="color:#ccc;">${t('settled')}</small>`}</div></div>`).join('');
+        $('debt-list').innerHTML = debts.length === 0 ? `<div class="empty-state" style="padding:1rem;"><i class="fas fa-handshake"></i><p>${t('no_debts')}</p></div>` : debts.map(tx => `<div class="tx-item"><div class="delete-btn" onclick="askDelete('tx', ${tx.id})"><i class="fas fa-times"></i></div><div class="tx-icon debt"><i class="fas fa-hand-holding-usd"></i></div><div class="tx-info"><span>${tx.description}</span><small>${t('remaining_text')} ${fmt((tx.totalAmount||0)-(tx.paidAmount||0))} / ${t('total_text')} ${fmt(tx.totalAmount||0)}</small></div><div class="tx-right">${!tx.settled ? `<button onclick="askAction('payDebt', 'tx', ${tx.id})" class="action-btn-sm warn">${t('settle_debt')}</button>` : `<small style="color:#ccc;">${t('settled')}</small>`}</div></div>`).join('');
     }
 
     function renderAll() {
