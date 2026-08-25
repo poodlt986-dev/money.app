@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FlowFin - จัดการเงินกระเป๋าตุ้ม</title>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-color: #f0f2f5;
+            --card-bg: #ffffff;
+            --text-main: #1c1c1e;
+            --text-muted: #8e8e93;
+            --income-color: #34c759;
+            --expense-color: #ff3b30;
+            --warn-color: #ff9500;
+            --border-color: #e5e5ea;
+            --primary: #007aff;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.04);
+            --shadow-md: 0 4px 12px rgba(0,0,0,0.05);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'IBM Plex Sans Thai', sans-serif; -webkit-tap-highlight-color: transparent; }
+        
+        body { 
+            background: var(--bg-color); 
+            color: var(--text-main); 
+            display: flex; 
+            justify-content: center; 
+            min-height: 100vh; 
+            padding-bottom: 90px; /* เว้นระยะให้เมนูล่างและเลื่อนจอสบาย */
+        }
+        
+        .app-container { 
+            width: 100%; 
+            max-width: 420px; 
+            background: var(--bg-color); 
+            min-height: 100vh; 
+            position: relative; 
+            padding: 0 1rem;
+        }
+
+        /* Header */
+        .header { 
+            background: var(--card-bg); 
+            margin: 1rem 0; 
+            padding: 1.5rem; 
+            border-radius: 20px; 
+            text-align: center; 
+            box-shadow: var(--shadow-sm);
+        }
+        .header h1 { font-size: 0.8rem; font-weight: 500; color: var(--text-muted); letter-spacing: 0.5px; }
+        .balance { font-size: 2.5rem; font-weight: 700; margin-top: 0.25rem; }
+        .balance.negative { color: var(--expense-color); }
+
+        /* Daily Budget Card */
+        .budget-card { 
+            background: var(--card-bg); 
+            margin-bottom: 1rem; 
+            padding: 1.2rem 1.5rem; 
+            border-radius: 16px; 
+            box-shadow: var(--shadow-sm); 
+            cursor: pointer; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center;
+            border: 1px solid var(--border-color);
+        }
+        .budget-info small { color: var(--text-muted); font-size: 0.75rem; display: block; margin-bottom: 0.2rem; }
+        .budget-amount { font-size: 1.4rem; font-weight: 700; color: var(--primary); }
+        .budget-amount.over { color: var(--expense-color); }
+        .budget-sub { font-size: 0.7rem; color: var(--text-muted); margin-top: 0.2rem; }
+        .budget-icon { font-size: 1.5rem; color: var(--text-muted); }
+
+        /* Pages */
+        .page { display: none; animation: fadeIn 0.3s; }
+        .page.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Forms */
+        .card-box { background: var(--card-bg); padding: 1.2rem; border-radius: 16px; box-shadow: var(--shadow-sm); margin-bottom: 1rem; }
+        .type-toggle { display: flex; background: #f0f2f5; border-radius: 12px; padding: 4px; margin-bottom: 1rem; }
+        .type-toggle button { flex: 1; border: none; background: none; padding: 0.6rem; font-weight: 500; color: var(--text-muted); cursor: pointer; border-radius: 8px; transition: all 0.2s; font-size: 0.9rem; }
+        .type-toggle button.active.income { background: var(--income-color); color: white; }
+        .type-toggle button.active.expense { background: var(--expense-color); color: white; }
+
+        .form-group { display: flex; gap: 0.5rem; margin-bottom: 0.8rem; }
+        .input-field { flex: 1; padding: 0.8rem 1rem; border: 1px solid var(--border-color); border-radius: 12px; font-size: 0.95rem; outline: none; transition: border 0.2s; width: 100%; background: #fff; }
+        .input-field:focus { border-color: var(--primary); background: #fff; }
+
+        .btn-primary { background: var(--text-main); color: white; border: none; padding: 0.85rem; border-radius: 12px; font-weight: 600; width: 100%; cursor: pointer; font-size: 1rem; }
+        .btn-primary:active { transform: scale(0.98); }
+
+        /* Transaction List */
+        .section-title { font-size: 0.85rem; margin: 1.5rem 0 0.75rem; font-weight: 600; color: var(--text-muted); padding-left: 0.5rem; display: flex; justify-content: space-between; align-items: center; }
+        .edit-toggle-btn { background: none; border: none; color: var(--primary); font-size: 0.8rem; font-weight: 600; cursor: pointer; padding: 4px 8px; border-radius: 6px; }
+        .edit-toggle-btn.active { background: var(--primary); color: white; }
+        
+        .tx-item { background: var(--card-bg); display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.2rem; border-radius: 14px; margin-bottom: 0.5rem; box-shadow: var(--shadow-sm); position: relative; }
+        .tx-icon { width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; margin-right: 0.8rem; flex-shrink: 0; font-size: 1.1rem; }
+        .tx-icon.income { background: rgba(52, 199, 89, 0.1); color: var(--income-color); }
+        .tx-icon.expense { background: rgba(255, 59, 48, 0.1); color: var(--expense-color); }
+        .tx-icon.debt { background: rgba(255, 149, 0, 0.1); color: var(--warn-color); }
+        .tx-icon.inst { background: rgba(0, 122, 255, 0.1); color: var(--primary); }
+        
+        .tx-info { flex: 1; min-width: 0; }
+        .tx-info span { display: block; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .tx-info small { color: var(--text-muted); font-size: 0.75rem; }
+        .tx-right { text-align: right; display: flex; flex-direction: column; align-items: flex-end; }
+        .tx-amount { font-weight: 600; font-size: 1rem; }
+        .tx-amount.income { color: var(--income-color); }
+        .tx-amount.expense { color: var(--expense-color); }
+        .tx-amount.debt { color: var(--warn-color); }
+        .tx-amount.settled { color: #c7c7cc; text-decoration: line-through; }
+        
+        .delete-btn { position: absolute; right: -6px; top: -6px; background: var(--expense-color); color: white; border: 2px solid var(--bg-color); border-radius: 50%; width: 24px; height: 24px; font-size: 0.7rem; display: none; align-items: center; justify-content: center; cursor: pointer; z-index: 10; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        body.edit-mode .delete-btn { display: flex; } /* แสดงปุ่มลบเมื่อเข้าโหมดแก้ไข */
+
+        .split-toggle { display: flex; align-items: center; gap: 0.5rem; margin: 0.5rem 0 1rem; font-size: 0.85rem; color: var(--text-muted); cursor: pointer; }
+        .split-content { display: none; background: #f8f9fa; padding: 0.8rem; border-radius: 12px; margin-bottom: 1rem; }
+        .split-content.active { display: block; }
+
+        /* Bottom Nav */
+        .bottom-nav { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 420px; background: var(--card-bg); display: flex; justify-content: space-around; padding: 0.6rem 0; border-top: 1px solid var(--border-color); z-index: 100; box-shadow: 0 -2px 10px rgba(0,0,0,0.03); }
+        .nav-btn { background: none; border: none; display: flex; flex-direction: column; align-items: center; gap: 2px; color: var(--text-muted); cursor: pointer; padding: 0.5rem; font-size: 0.65rem; font-weight: 500; }
+        .nav-btn.active { color: var(--primary); }
+        .nav-btn i { font-size: 1.2rem; }
+
+        /* Modals */
+        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); display: none; justify-content: center; align-items: flex-end; z-index: 2000; padding: 1rem; }
+        .modal-overlay.show { display: flex; animation: fadeIn 0.2s; }
+        .modal-box { background: var(--card-bg); padding: 1.5rem; border-radius: 20px 20px 0 0; max-width: 420px; width: 100%; text-align: center; animation: slideUp 0.3s ease-out; }
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+        .modal-box h3 { margin-bottom: 1rem; font-size: 1.2rem; }
+        .modal-box p { color: var(--text-muted); margin-bottom: 1rem; font-size: 0.9rem; }
+        .modal-input-group { display: flex; gap: 0.5rem; margin-bottom: 1rem; }
+        .modal-actions { display: flex; gap: 0.5rem; }
+        .modal-actions button { flex: 1; padding: 0.8rem; border-radius: 12px; border: none; font-weight: 600; cursor: pointer; font-size: 0.95rem; }
+        .btn-cancel { background: #e5e5ea; color: var(--text-main); }
+        .btn-confirm { background: var(--primary); color: white; }
+        .btn-confirm.danger { background: var(--expense-color); }
+
+        /* Toast */
+        .toast { position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%) translateY(100px); background: var(--text-main); color: white; padding: 0.75rem 1.5rem; border-radius: 100px; font-size: 0.85rem; box-shadow: 0 4px 12px rgba(0,0,0,0.15); transition: transform 0.3s; z-index: 1500; max-width: 90%; text-align: center; }
+        .toast.show { transform: translateX(-50%) translateY(0); }
+        
+        .empty-state { text-align: center; padding: 3rem 1rem; color: var(--text-muted); }
+        .empty-state i { font-size: 2.5rem; margin-bottom: 1rem; opacity: 0.15; }
+        .empty-state p { font-size: 0.9rem; }
+
+        /* Debt & Installments specific UI */
+        .progress-bar { height: 6px; background: #f0f2f5; border-radius: 3px; margin-top: 8px; overflow: hidden; width: 100%; }
+        .progress-fill { height: 100%; background: var(--primary); border-radius: 3px; transition: width 0.3s; }
+        .action-btn-sm { background: rgba(0, 122, 255, 0.1); border: none; color: var(--primary); padding: 4px 10px; border-radius: 8px; font-size: 0.75rem; cursor: pointer; margin-top: 6px; font-weight: 500; }
+        .action-btn-sm.warn { background: rgba(255, 149, 0, 0.1); color: var(--warn-color); }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <div class="header">
+        <h1>ยอดเงินคงเหลือ</h1>
+        <div class="balance" id="balance">฿0.00</div>
+    </div>
+
+    <div class="budget-card" id="budget-card">
+        <div class="budget-info">
+            <small>เหลือใช้ได้วันนี้</small>
+            <div class="budget-amount" id="daily-remaining">฿0.00</div>
+            <div class="budget-sub" id="budget-sub-text">วันนี้ใช้ไป ฿0.00</div>
+        </div>
+        <div class="budget-icon"><i class="fas fa-coins"></i></div>
+    </div>
+
+    <!-- Page 1: Home -->
+    <div class="page active" id="page-home">
+        <div class="card-box">
+            <div class="type-toggle">
+                <button type="button" class="active expense" data-type="expense">รายจ่าย</button>
+                <button type="button" class="income" data-type="income">รายรับ</button>
+            </div>
+            <div class="form-group">
+                <input type="text" id="description" class="input-field" placeholder="รายการ (ไม่ใส่ก็ได้)">
+            </div>
+            <div class="form-group">
+                <input type="text" id="amount" class="input-field" placeholder="จำนวนเงิน" inputmode="decimal">
+            </div>
+            
+            <label class="split-toggle">
+                <input type="checkbox" id="split-check" style="width:auto;">
+                🍲 แชร์ค่าใช้จ่าย / ตั้งหนี้เพื่อน
+            </label>
+            <div class="split-content" id="split-box">
+                <div class="form-group" style="margin-bottom:0;">
+                    <input type="number" id="split-people" class="input-field" placeholder="จำนวนคน" min="2" value="2">
+                    <select id="split-type" class="input-field" style="flex: 0.8;">
+                        <option value="lend">เพื่อนค้างจ่ายให้ฉัน</option>
+                        <option value="borrow">ฉันค้างจ่ายเพื่อน</option>
+                    </select>
+                </div>
+            </div>
+
+            <button type="button" class="btn-primary" id="add-btn"><i class="fas fa-plus"></i> เพิ่มรายการ</button>
+        </div>
+
+        <div class="section-title">
+            รายการล่าสุด
+        </div>
+        <div id="recent-list"></div>
+    </div>
+
+    <!-- Page 2: History -->
+    <div class="page" id="page-history">
+        <div class="section-title">
+            ประวัติทั้งหมด
+            <button class="edit-toggle-btn" id="edit-toggle-btn" onclick="toggleEditMode()"><i class="fas fa-edit"></i> แก้ไข/ลบ</button>
+        </div>
+        <div id="full-history-list"></div>
+    </div>
+
+    <!-- Page 3: Finance -->
+    <div class="page" id="page-finance">
+        <div class="section-title">
+            🤝 หนี้ค้างจ่าย (แชร์จ่าย)
+            <button class="edit-toggle-btn" onclick="toggleEditMode()"><i class="fas fa-edit"></i> แก้ไข/ลบ</button>
+        </div>
+        <div id="debt-list" style="margin-bottom: 1.5rem;"></div>
+
+        <div class="section-title">
+            📱 สินค้าผ่อนชำระ
+            <button class="edit-toggle-btn" onclick="toggleEditMode()"><i class="fas fa-edit"></i> แก้ไข/ลบ</button>
+        </div>
+        <div class="card-box">
+            <h4 style="margin-bottom:1rem; font-size:1rem;">เพิ่มรายการผ่อนใหม่</h4>
+            <div class="form-group">
+                <input type="text" id="inst-name" class="input-field" placeholder="ชื่อสินค้า (เช่น iPhone)">
+            </div>
+            <div class="form-group">
+                <input type="number" id="inst-monthly" class="input-field" placeholder="ค่างวด/เดือน" inputmode="decimal">
+                <input type="number" id="inst-total" class="input-field" placeholder="จำนวนงวด" inputmode="decimal">
+            </div>
+            <button type="button" class="btn-primary" id="add-inst-btn" style="background: var(--primary);"><i class="fas fa-plus"></i> เพิ่มรายการผ่อน</button>
+        </div>
+        <div id="installment-list"></div>
+    </div>
+</div>
+
+<nav class="bottom-nav">
+    <button type="button" class="nav-btn active" data-page="home"><i class="fas fa-home"></i>หน้าแรก</button>
+    <button type="button" class="nav-btn" data-page="history"><i class="fas fa-history"></i>ประวัติ</button>
+    <button type="button" class="nav-btn" data-page="finance"><i class="fas fa-file-invoice-dollar"></i>หนี้/ผ่อน</button>
+</nav>
+
+<!-- Modals -->
+<div class="modal-overlay" id="confirm-modal">
+    <div class="modal-box">
+        <h3 id="modal-title">ยืนยันการลบ</h3>
+        <p id="modal-desc">คุณต้องการลบรายการนี้ใช่ไหม?</p>
+        <div class="modal-actions">
+            <button class="btn-cancel" id="cancel-action">ยกเลิก</button>
+            <button class="btn-confirm danger" id="confirm-action">ลบทิ้ง</button>
+        </div>
+    </div>
+</div>
+
+<div class="modal-overlay" id="payment-modal">
+    <div class="modal-box">
+        <h3 id="pay-title">รับเงินคืน / จ่ายคืน</h3>
+        <p id="pay-desc">กรอกยอดที่ได้รับมา</p>
+        <div class="modal-input-group">
+            <input type="text" id="pay-amount" class="input-field" placeholder="จำนวนเงิน" inputmode="decimal">
+        </div>
+        <div class="modal-actions">
+            <button class="btn-cancel" id="cancel-payment">ยกเลิก</button>
+            <button class="btn-confirm" id="confirm-payment">บันทึก</button>
+        </div>
+    </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+    // --- Safe Storage & State ---
+    function safeGet(key, fallback) { try { const d = localStorage.getItem(key); return d ? JSON.parse(d) : fallback; } catch (e) { return fallback; } }
+    function safeSet(key, data) { try { localStorage.setItem(key, JSON.stringify(data)); } catch (e) {} }
+
+    let state = {
+        transactions: safeGet('ff_transactions', []),
+        installments: safeGet('ff_installments', []),
+        dailyBudget: safeGet('ff_daily_budget', 0),
+        currentType: 'expense'
+    };
+
+    let actionTargetId = null;
+    let actionTargetType = null; // 'tx' or 'inst'
+    const $ = id => document.getElementById(id);
+
+    // --- Navigation ---
+    document.querySelectorAll('.nav-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            btn.classList.add('active');
+            $('page-' + btn.dataset.page).classList.add('active');
+            if (document.body.classList.contains('edit-mode')) {
+                toggleEditMode(); // ออกจากโหมดแก้ไขเมื่อเปลี่ยนหน้า
+            }
+            renderAll();
+        });
+    });
+
+    document.querySelectorAll('.type-toggle button').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.type-toggle button').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            state.currentType = btn.dataset.type;
+        });
+    });
+
+    $('split-check').addEventListener('change', (e) => $('split-box').classList.toggle('active', e.target.checked));
+
+    // --- Edit Mode Toggle ---
+    window.toggleEditMode = function() {
+        document.body.classList.toggle('edit-mode');
+        const isOn = document.body.classList.contains('edit-mode');
+        document.querySelectorAll('.edit-toggle-btn').forEach(btn => {
+            btn.innerHTML = isOn ? '<i class="fas fa-times"></i> เสร็จแล้ว' : '<i class="fas fa-edit"></i> แก้ไข/ลบ';
+            btn.classList.toggle('active', isOn);
+        });
+    }
+
+    // --- Budget Logic (ต้องมีรายรับก่อน) ---
+    function calculateBalance() {
+        return state.transactions.reduce((acc, t) => {
+            const amt = t.amount || t.totalAmount || 0;
+            if (t.type === 'income') return acc + amt;
+            if (t.type === 'expense') return acc - amt;
+            if (t.type === 'debt' && t.subtype === 'lend') return acc - (t.totalAmount || 0);
+            if (t.type === 'debt' && t.subtype === 'borrow') return acc + (t.totalAmount || 0);
+            return acc;
+        }, 0);
+    }
+
+    $('budget-card').addEventListener('click', () => {
+        const totalBalance = calculateBalance();
+        
+        // เช็คก่อนว่ามีเงินหรือยอดรวมมากกว่า 0 ไหม
+        if (totalBalance <= 0) {
+            showToast('ต้องมีรายรับก่อน ถึงจะตั้งงบประมาณได้นะ!', true);
+            return;
+        }
+
+        const input = prompt('ตั้งงบประมาณใช้จ่ายสูงสุดต่อวัน (บาท):', state.dailyBudget || totalBalance);
+        if (input !== null) {
+            const num = parseFloat(input) || 0;
+            if (num <= 0) {
+                showToast('งบประมาณต้องมากกว่า 0', true);
+                return;
+            }
+            state.dailyBudget = num;
+            safeSet('ff_daily_budget', state.dailyBudget);
+            renderAll();
+            showToast('บันทึกงบประมาณแล้ว');
+        }
+    });
+
+    const fmt = num => '฿' + (num || 0).toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,');
+
+    // --- UI Update ---
+    function updateUI() {
+        const totalBalance = calculateBalance();
+
+        $('balance').innerText = fmt(totalBalance);
+        $('balance').className = 'balance ' + (totalBalance < 0 ? 'negative' : '');
+
+        const todayStr = new Date().toDateString();
+        const todayExpense = state.transactions
+            .filter(t => t.type === 'expense' && new Date(t.timestamp).toDateString() === todayStr)
+            .reduce((acc, t) => acc + (t.amount || 0), 0);
+
+        if (state.dailyBudget > 0) {
+            const remaining = state.dailyBudget - todayExpense;
+            $('daily-remaining').innerText = fmt(remaining);
+            $('daily-remaining').className = 'budget-amount ' + (remaining < 0 ? 'over' : '');
+            $('budget-sub-text').innerText = `วันนี้ใช้ไป ${fmt(todayExpense)} / งบ ${fmt(state.dailyBudget)}`;
+        } else {
+            $('daily-remaining').innerText = fmt(todayExpense);
+            $('daily-remaining').className = 'budget-amount';
+            $('budget-sub-text').innerText = 'วันนี้ใช้ไปทั้งหมด (กดที่นี่เพื่อตั้งงบ)';
+        }
+    }
+
+    // --- Add Transaction ---
+    $('add-btn').addEventListener('click', () => {
+        const desc = $('description').value.trim() || (state.currentType === 'income' ? 'รายรับทั่วไป' : 'รายจ่ายทั่วไป');
+        const amt = parseFloat($('amount').value.replace(/[^0-9.]/g, ''));
+
+        if (isNaN(amt) || amt <= 0) return showToast('ใส่จำนวนเงินหน่อยนะ!', true);
+
+        let newTx = {
+            id: Date.now(),
+            description: desc,
+            amount: amt,
+            type: state.currentType,
+            dateStr: new Date().toLocaleDateString('th-TH', { day: '2-digit', month: 'short' }),
+            timestamp: Date.now()
+        };
+
+        if ($('split-check').checked) {
+            const people = parseInt($('split-people').value) || 2;
+            newTx.type = 'debt';
+            newTx.subtype = $('split-type').value;
+            newTx.splitPeople = people;
+            newTx.totalAmount = amt;
+            newTx.paidAmount = 0;
+            newTx.description = desc + ` (แชร์ ${people} คน)`;
+            newTx.settled = false;
+            delete newTx.amount;
+        }
+
+        state.transactions.unshift(newTx);
+        safeSet('ff_transactions', state.transactions);
+        
+        $('description').value = '';
+        $('amount').value = '';
+        $('split-check').checked = false;
+        $('split-box').classList.remove('active');
+        
+        showToast('บันทึกสำเร็จ!');
+        renderAll();
+    });
+
+    // --- Add Installment ---
+    $('add-inst-btn').addEventListener('click', () => {
+        const name = $('inst-name').value.trim();
+        const monthly = parseFloat($('inst-monthly').value);
+        const total = parseInt($('inst-total').value);
+
+        if (!name || isNaN(monthly) || isNaN(total)) return showToast('กรอกข้อมูลผ่อนสินค้าให้ครบ', true);
+
+        state.installments.push({
+            id: Date.now(),
+            name,
+            monthly,
+            totalMonths: total,
+            paidMonths: 0
+        });
+
+        safeSet('ff_installments', state.installments);
+        $('inst-name').value = '';
+        $('inst-monthly').value = '';
+        $('inst-total').value = '';
+        showToast('เพิ่มรายการผ่อนสำเร็จ!');
+        renderAll();
+    });
+
+    // --- Pay Installment ---
+    window.payInstallment = function(id) {
+        let inst = state.installments.find(i => i.id === id);
+        if (inst && inst.paidMonths < inst.totalMonths) {
+            inst.paidMonths++;
+            state.transactions.unshift({
+                id: Date.now(),
+                description: `ผ่อนชำระ ${inst.name} (งวด ${inst.paidMonths}/${inst.totalMonths})`,
+                amount: inst.monthly,
+                type: 'expense',
+                dateStr: new Date().toLocaleDateString('th-TH', { day: '2-digit', month: 'short' }),
+                timestamp: Date.now()
+            });
+            safeSet('ff_installments', state.installments);
+            safeSet('ff_transactions', state.transactions);
+            showToast('จ่ายงวดเรียบร้อย! หักเงินออกจากยอดแล้ว');
+            renderAll();
+        }
+    }
+
+    // --- Debt Payment (Partial) ---
+    window.payDebt = function(id) {
+        actionTargetId = id;
+        actionTargetType = 'debt';
+        const tx = state.transactions.find(t => t.id === id);
+        if (!tx) return;
+
+        const remaining = (tx.totalAmount || 0) - (tx.paidAmount || 0);
+        const isLend = tx.subtype === 'lend';
+        
+        $('pay-title').innerText = isLend ? "รับเงินคืนจากเพื่อน" : "จ่ายเงินคืนเพื่อน";
+        $('pay-desc').innerText = `ยอดค้างชำระ: ${fmt(remaining)} (สามารถใส่บางส่วนได้)`;
+        $('pay-amount').value = remaining;
+        $('payment-modal').classList.add('show');
+    }
+
+    $('cancel-payment').addEventListener('click', () => $('payment-modal').classList.remove('show'));
+    $('confirm-payment').addEventListener('click', () => {
+        const payVal = parseFloat($('pay-amount').value.replace(/[^0-9.]/g, ''));
+        if (isNaN(payVal) || payVal <= 0) return showToast('ใส่ยอดเงินไม่ถูกต้อง', true);
+
+        const tx = state.transactions.find(t => t.id === actionTargetId);
+        if (!tx) return;
+
+        const remaining = (tx.totalAmount || 0) - (tx.paidAmount || 0);
+        if (payVal > remaining) return showToast('ยอดที่ใส่มากเกินกว่าที่ค้างชำระ', true);
+
+        tx.paidAmount = (tx.paidAmount || 0) + payVal;
+        if (tx.paidAmount >= tx.totalAmount) tx.settled = true;
+
+        if (tx.subtype === 'lend') {
+            state.transactions.unshift({ id: Date.now(), description: `เพื่อนคืนเงิน (${tx.description})`, amount: payVal, type: 'income', dateStr: new Date().toLocaleDateString('th-TH', { day: '2-digit', month: 'short' }), timestamp: Date.now() });
+        } else {
+            state.transactions.unshift({ id: Date.now(), description: `ฉันคืนเงินเพื่อน (${tx.description})`, amount: payVal, type: 'expense', dateStr: new Date().toLocaleDateString('th-TH', { day: '2-digit', month: 'short' }), timestamp: Date.now() });
+        }
+
+        safeSet('ff_transactions', state.transactions);
+        $('payment-modal').classList.remove('show');
+        showToast('บันทึกการชำระสำเร็จ!');
+        renderAll();
+    });
+
+    // --- Delete Logic (Transactions & Installments) ---
+    window.askDelete = function(id, type, desc) {
+        actionTargetId = id;
+        actionTargetType = type; // 'tx' or 'inst'
+        $('modal-title').innerText = "ยืนยันการลบ";
+        $('modal-desc').innerText = `คุณต้องการลบรายการ "${desc}" ใช่ไหม?`;
+        $('confirm-action').className = "btn-confirm danger";
+        $('confirm-modal').classList.add('show');
+    }
+
+    $('cancel-action').addEventListener('click', () => $('confirm-modal').classList.remove('show'));
+    $('confirm-action').addEventListener('click', () => {
+        if (actionTargetId !== null) {
+            if (actionTargetType === 'tx') {
+                state.transactions = state.transactions.filter(t => t.id !== actionTargetId);
+                safeSet('ff_transactions', state.transactions);
+            } else if (actionTargetType === 'inst') {
+                state.installments = state.installments.filter(i => i.id !== actionTargetId);
+                safeSet('ff_installments', state.installments);
+            }
+            $('confirm-modal').classList.remove('show');
+            showToast('ลบรายการแล้ว');
+            renderAll();
+        }
+    });
+
+    // --- Render Functions ---
+    function renderList(list, targetEl, limit = 999) {
+        const container = $(targetEl);
+        if (list.length === 0) {
+            container.innerHTML = `<div class="empty-state"><i class="fas fa-receipt"></i><p>ยังไม่มีรายการ</p></div>`;
+            return;
+        }
+
+        const grouped = {};
+        list.slice(0, limit).forEach(t => {
+            if (!grouped[t.dateStr]) grouped[t.dateStr] = [];
+            grouped[t.dateStr].push(t);
+        });
+
+        let html = '';
+        for (const date in grouped) {
+            html += `<div style="margin: 1rem 0 0.5rem; font-size: 0.75rem; color: var(--text-muted); font-weight: 600; padding-left: 0.5rem;">${date}</div>`;
+            grouped[date].forEach(t => {
+                let iconClass = t.type, sign = '-', amountClass = t.type, icon = 'arrow-up';
+                let displayAmount = t.amount || 0;
+
+                if (t.type === 'income') { sign = '+'; icon = 'arrow-down'; }
+                if (t.type === 'expense') { sign = '-'; icon = 'arrow-up'; }
+
+                let rightContent = `<span class="tx-amount ${amountClass}">${sign}${fmt(displayAmount)}</span>`;
+
+                if (t.type === 'debt') {
+                    iconClass = 'debt';
+                    icon = t.subtype === 'lend' ? 'hand-holding-usd' : 'hand-holding';
+                    displayAmount = t.totalAmount || 0;
+                    amountClass = t.settled ? 'settled' : 'debt';
+                    sign = t.subtype === 'lend' ? '+' : '-';
+                    rightContent = `<span class="tx-amount ${amountClass}">${sign}${fmt(displayAmount)}</span>`;
+                }
+
+                html += `
+                    <div class="tx-item">
+                        <div class="delete-btn" onclick="askDelete(${t.id}, 'tx', '${t.description.replace(/'/g, "\\'")}')"><i class="fas fa-times"></i></div>
+                        <div class="tx-icon ${iconClass}"><i class="fas fa-${icon}"></i></div>
+                        <div class="tx-info">
+                            <span>${t.description}</span>
+                            <small>${t.type === 'debt' ? (t.subtype === 'lend' ? 'เพื่อนค้างจ่าย' : 'ฉันค้างจ่าย') : (t.type === 'income' ? 'รายรับ' : 'รายจ่าย')}</small>
+                        </div>
+                        <div class="tx-right">${rightContent}</div>
+                    </div>
+                `;
+            });
+        }
+        container.innerHTML = html;
+    }
+
+    function renderFinancePage() {
+        // 1. Debts
+        const debts = state.transactions.filter(t => t.type === 'debt');
+        const debtContainer = $('debt-list');
+        if (debts.length === 0) {
+            debtContainer.innerHTML = `<div class="empty-state" style="padding:2rem;"><i class="fas fa-handshake" style="font-size:2rem;"></i><p>ไม่มีหนี้ค้างจ่าย</p></div>`;
+        } else {
+            debtContainer.innerHTML = debts.map(t => {
+                const isLend = t.subtype === 'lend';
+                const remaining = (t.totalAmount || 0) - (t.paidAmount || 0);
+                const progress = t.totalAmount > 0 ? ((t.paidAmount || 0) / t.totalAmount) * 100 : 0;
+                
+                return `
+                    <div class="tx-item" style="flex-direction: column; align-items: stretch;">
+                        <div class="delete-btn" onclick="askDelete(${t.id}, 'tx', '${t.description.replace(/'/g, "\\'")}')"><i class="fas fa-times"></i></div>
+                        <div style="display: flex; justify-content: space-between; width: 100%; margin-bottom: 8px;">
+                            <div class="tx-info" style="display: flex; align-items: center;">
+                                <div class="tx-icon debt" style="margin-right: 0.8rem;"><i class="fas fa-${isLend ? 'hand-holding-usd' : 'hand-holding'}"></i></div>
+                                <div>
+                                    <span>${t.description}</span>
+                                    <small>${isLend ? 'เพื่อนค้างจ่ายคุณ' : 'คุณค้างจ่ายเพื่อน'}</small>
+                                </div>
+                            </div>
+                            <div class="tx-right">
+                                <span class="tx-amount ${t.settled ? 'settled' : 'debt'}">${isLend ? '+' : '-'}${fmt(remaining)}</span>
+                                ${!t.settled ? `<button onclick="payDebt(${t.id})" class="action-btn-sm warn">เคลียร์หนี้</button>` : '<small style="color:#c7c7cc; font-size:0.7rem;">เคลียร์แล้ว</small>'}
+                            </div>
+                        </div>
+                        <div style="display:flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-muted);">
+                            <span>ชำระแล้ว ${fmt(t.paidAmount || 0)}</span>
+                            <span>รวม ${fmt(t.totalAmount || 0)}</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: ${progress}%; ${t.settled ? 'background: var(--income-color);' : 'background: var(--warn-color);'}"></div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // 2. Installments
+        const instContainer = $('installment-list');
+        if (state.installments.length === 0) {
+            instContainer.innerHTML = `<div class="empty-state" style="padding:2rem;"><i class="fas fa-box-open" style="font-size:2rem;"></i><p>ไม่มีสินค้าที่กำลังผ่อน</p></div>`;
+        } else {
+            instContainer.innerHTML = state.installments.map(inst => {
+                const progress = (inst.paidMonths / inst.totalMonths) * 100;
+                const isDone = inst.paidMonths >= inst.totalMonths;
+                return `
+                    <div class="tx-item" style="flex-direction: column; align-items: stretch;">
+                        <div class="delete-btn" onclick="askDelete(${inst.id}, 'inst', '${inst.name.replace(/'/g, "\\'")}')"><i class="fas fa-times"></i></div>
+                        <div style="display: flex; justify-content: space-between; width: 100%; margin-bottom: 8px;">
+                            <div class="tx-info" style="display: flex; align-items: center;">
+                                <div class="tx-icon inst" style="margin-right: 0.8rem;"><i class="fas fa-mobile-alt"></i></div>
+                                <div>
+                                    <span>${inst.name}</span>
+                                    <small>ผ่อนเดือนละ ${fmt(inst.monthly)}</small>
+                                </div>
+                            </div>
+                            <div class="tx-right">
+                                <span class="tx-amount ${isDone ? 'settled' : ''}" style="color: var(--primary);">${inst.paidMonths}/${inst.totalMonths} งวด</span>
+                                ${!isDone ? `<button onclick="payInstallment(${inst.id})" class="action-btn-sm">จ่ายงวดนี้</button>` : '<small style="color:var(--income-color); font-size:0.7rem;">ผ่อนจบแล้ว</small>'}
+                            </div>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: ${progress}%; ${isDone ? 'background: var(--income-color);' : ''}"></div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+    }
+
+    function renderAll() {
+        updateUI();
+        renderList(state.transactions, 'recent-list', 5);
+        renderList(state.transactions, 'full-history-list');
+        renderFinancePage();
+    }
+
+    function showToast(msg, isError = false) {
+        const t = $('toast');
+        t.innerText = msg;
+        t.style.background = isError ? 'var(--expense-color)' : 'var(--text-main)';
+        t.classList.add('show');
+        setTimeout(() => t.classList.remove('show'), 2500);
+    }
+
+    renderAll();
+</script>
+</body>
+</html>
