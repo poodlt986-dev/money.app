@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FlowFin Pro - จัดการเงินกระเป๋าตุ้ม</title>
+    <title>FlowFin Pro - Personal Finance</title>
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -22,31 +22,16 @@
 
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'IBM Plex Sans Thai', sans-serif; -webkit-tap-highlight-color: transparent; }
         
-        body { 
-            background: var(--bg-color); 
-            color: var(--text-main); 
-            display: flex; 
-            justify-content: center; 
-            min-height: 100vh; 
-            padding-bottom: 100px; /* เพิ่มพื้นที่ว่างด้านล่างให้กว้างขึ้น */
-        }
-        
-        .app-container { 
-            width: 100%; 
-            max-width: 420px; 
-            background: var(--bg-color); 
-            min-height: 100vh; 
-            position: relative; 
-            padding: 0 1rem;
-        }
+        body { background: var(--bg-color); color: var(--text-main); display: flex; justify-content: center; min-height: 100vh; padding-bottom: 100px; }
+        .app-container { width: 100%; max-width: 420px; background: var(--bg-color); min-height: 100vh; position: relative; padding: 0 1rem 2rem; }
 
-        .header { background: var(--card-bg); margin: 1rem 0; padding: 1.5rem; border-radius: 20px; text-align: center; box-shadow: var(--shadow-sm); }
+        .header { background: var(--card-bg); margin: 1rem 0; padding: 1.5rem; border-radius: 20px; text-align: center; box-shadow: var(--shadow-sm); position: relative; }
+        .lang-toggle { position: absolute; top: 1rem; right: 1rem; background: #f0f2f5; color: var(--text-main); border: none; padding: 0.4rem 0.8rem; border-radius: 20px; font-weight: 600; font-size: 0.75rem; cursor: pointer; }
         .header h1 { font-size: 0.8rem; font-weight: 500; color: var(--text-muted); }
         .balance { font-size: 2.5rem; font-weight: 700; margin-top: 0.25rem; }
         .balance.negative { color: var(--expense-color); }
         .balance-sub { font-size: 0.75rem; color: var(--text-muted); margin-top: 0.3rem; }
 
-        /* Notification Banner */
         .notif-banner { background: #fff3cd; color: #856404; padding: 0.75rem 1rem; border-radius: 12px; margin-bottom: 1rem; font-size: 0.85rem; display: none; align-items: center; gap: 0.5rem; border: 1px solid #ffeeba; }
         .notif-banner.show { display: flex; }
         .notif-banner i { color: var(--warn-color); }
@@ -73,8 +58,9 @@
         .btn-primary { background: var(--text-main); color: white; border: none; padding: 0.85rem; border-radius: 12px; font-weight: 600; width: 100%; cursor: pointer; font-size: 1rem; }
         .btn-primary:active { transform: scale(0.98); }
         .btn-secondary { background: #e5e5ea; color: var(--text-main); border: none; padding: 0.85rem; border-radius: 12px; font-weight: 600; width: 100%; cursor: pointer; font-size: 0.9rem; margin-top: 0.5rem; }
+        .btn-danger { background: rgba(255, 59, 48, 0.1); color: var(--expense-color); border: none; padding: 0.85rem; border-radius: 12px; font-weight: 600; width: 100%; cursor: pointer; font-size: 0.9rem; margin-top: 1.5rem; }
 
-        .section-title { font-size: 0.85rem; margin: 1.5rem 0 0.75rem; font-weight: 600; color: var(--text-muted); padding-left: 0.5rem; display: flex; justify-content: space-between; }
+        .section-title { font-size: 0.85rem; margin: 1.5rem 0 0.75rem; font-weight: 600; color: var(--text-muted); padding-left: 0.5rem; display: flex; justify-content: space-between; align-items: center; }
         .edit-toggle-btn { background: none; border: none; color: var(--primary); font-size: 0.8rem; font-weight: 600; cursor: pointer; }
         .edit-toggle-btn.active { background: var(--primary); color: white; padding: 4px 8px; border-radius: 6px; }
         
@@ -108,8 +94,10 @@
         .nav-btn { background: none; border: none; display: flex; flex-direction: column; align-items: center; gap: 2px; color: var(--text-muted); cursor: pointer; padding: 0.5rem; font-size: 0.65rem; font-weight: 500; position: relative; }
         .nav-btn.active { color: var(--primary); }
         .nav-btn i { font-size: 1.2rem; }
-        .badge-dot { position: absolute; top: 5px; right: calc(50% - 20px); width: 8px; height: 8px; background: var(--expense-color); border-radius: 50%; display: none; }
-        .badge-dot.show { display: block; }
+        
+        .badge-dot { position: absolute; top: 2px; right: calc(50% - 18px); width: 10px; height: 10px; background: var(--expense-color); border-radius: 50%; display: none; border: 1.5px solid var(--card-bg); }
+        .badge-dot.show { display: block; animation: blinkRed 1s infinite; }
+        @keyframes blinkRed { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.2; transform: scale(1.3); } }
 
         .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); display: none; justify-content: center; align-items: flex-end; z-index: 2000; padding: 1rem; }
         .modal-overlay.show { display: flex; }
@@ -117,7 +105,7 @@
         @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
         .modal-box h3 { margin-bottom: 1rem; font-size: 1.2rem; }
         .modal-box p { color: var(--text-muted); margin-bottom: 1rem; font-size: 0.9rem; }
-        .modal-actions { display: flex; gap: 0.5rem; }
+        .modal-actions { display: flex; gap: 0.5rem; margin-top: 1rem; }
         .modal-actions button { flex: 1; padding: 0.8rem; border-radius: 12px; border: none; font-weight: 600; cursor: pointer; font-size: 0.95rem; }
         .btn-cancel { background: #e5e5ea; color: var(--text-main); }
         .btn-confirm { background: var(--primary); color: white; }
@@ -133,13 +121,16 @@
         .progress-fill { height: 100%; background: var(--primary); border-radius: 3px; transition: width 0.3s; }
         .action-btn-sm { background: rgba(0, 122, 255, 0.1); border: none; color: var(--primary); padding: 4px 10px; border-radius: 8px; font-size: 0.75rem; cursor: pointer; margin-top: 6px; font-weight: 500; }
         .action-btn-sm.warn { background: rgba(255, 149, 0, 0.1); color: var(--warn-color); }
+
+        .watermark { text-align: center; padding: 2rem 0 1rem; color: #c7c7cc; font-size: 0.75rem; font-weight: 500; letter-spacing: 1px; }
     </style>
 </head>
 <body>
 
 <div class="app-container">
     <div class="header">
-        <h1>ยอดเงินคงเหลือรวม</h1>
+        <button class="lang-toggle" id="lang-btn">EN</button>
+        <h1 data-i18n="total_balance">ยอดเงินคงเหลือรวม</h1>
         <div class="balance" id="balance">฿0.00</div>
         <div class="balance-sub" id="balance-sub">เงินใช้ได้จริง ฿0.00 | เงินซ่อนไว้ ฿0.00</div>
     </div>
@@ -151,7 +142,7 @@
 
     <div class="budget-card" id="budget-card">
         <div class="budget-info">
-            <small>เหลือใช้ได้วันนี้</small>
+            <small data-i18n="left_for_today">เหลือใช้ได้วันนี้ (ไม่นับบิล/ผ่อน)</small>
             <div class="budget-amount" id="daily-remaining">฿0.00</div>
             <div class="budget-sub" id="budget-sub-text">วันนี้ใช้ไป ฿0.00</div>
         </div>
@@ -161,83 +152,99 @@
     <div class="page active" id="page-home">
         <div class="card-box">
             <div class="type-toggle">
-                <button type="button" class="active expense" data-type="expense">รายจ่าย</button>
-                <button type="button" class="income" data-type="income">รายรับ</button>
+                <button type="button" class="active expense" data-type="expense" data-i18n="expense">รายจ่าย</button>
+                <button type="button" class="income" data-type="income" data-i18n="income">รายรับ</button>
             </div>
             <div class="form-group">
-                <input type="text" id="description" class="input-field" placeholder="รายการ (ไม่ใส่ก็ได้)">
+                <input type="text" id="description" class="input-field" data-i18n-ph="desc_ph" placeholder="รายการ (ไม่ใส่ก็ได้)">
             </div>
             <div class="form-group">
-                <input type="text" id="amount" class="input-field" placeholder="จำนวนเงิน" inputmode="decimal">
+                <input type="text" id="amount" class="input-field" data-i18n-ph="amount_ph" placeholder="จำนวนเงิน" inputmode="decimal">
             </div>
             <label class="split-toggle">
                 <input type="checkbox" id="split-check" style="width:auto;">
-                🍲 แชร์ค่าใช้จ่าย / ตั้งหนี้เพื่อน
+                <span data-i18n="split_bill">🍲 แชร์ค่าใช้จ่าย / ตั้งหนี้เพื่อน</span>
             </label>
             <div class="split-content" id="split-box">
                 <div class="form-group" style="margin-bottom:0;">
-                    <input type="number" id="split-people" class="input-field" placeholder="จำนวนคน" min="2" value="2">
+                    <input type="number" id="split-people" class="input-field" data-i18n-ph="people_ph" placeholder="จำนวนคน" min="2" value="2">
                     <select id="split-type" class="input-field" style="flex: 0.8;">
-                        <option value="lend">เพื่อนค้างจ่ายให้ฉัน</option>
-                        <option value="borrow">ฉันค้างจ่ายเพื่อน</option>
+                        <option value="lend" data-i18n="friend_owes_me">เพื่อนค้างจ่ายให้ฉัน</option>
+                        <option value="borrow" data-i18n="i_owe_friend">ฉันค้างจ่ายเพื่อน</option>
                     </select>
                 </div>
             </div>
-            <button type="button" class="btn-primary" id="add-btn"><i class="fas fa-plus"></i> เพิ่มรายการ</button>
+            <button type="button" class="btn-primary" id="add-btn"><i class="fas fa-plus"></i> <span data-i18n="add_tx">เพิ่มรายการ</span></button>
         </div>
-        <div class="section-title">รายการล่าสุด</div>
+        <div class="section-title"><span data-i18n="recent_tx">รายการล่าสุด</span></div>
         <div id="recent-list"></div>
     </div>
 
     <div class="page" id="page-history">
         <div class="section-title">
-            ประวัติทั้งหมด
-            <button class="edit-toggle-btn" onclick="toggleEditMode()"><i class="fas fa-edit"></i> แก้ไข/ลบ</button>
+            <span data-i18n="all_history">ประวัติทั้งหมด</span>
+            <button class="edit-toggle-btn" onclick="toggleEditMode()"><i class="fas fa-edit"></i> <span data-i18n="edit_delete">แก้ไข/ลบ</span></button>
         </div>
         <div id="full-history-list"></div>
     </div>
 
     <div class="page" id="page-finance">
-        <div class="section-title">📅 บิลประจำเดือน</div>
+        <div class="section-title">📅 <span data-i18n="monthly_bills">บิลประจำเดือน</span></div>
         <div class="card-box">
             <div class="form-group">
-                <input type="text" id="bill-name" class="input-field" placeholder="ชื่อบิล (เช่น ค่าหอ)">
-                <input type="number" id="bill-amount" class="input-field" placeholder="จำนวนเงิน" inputmode="decimal">
+                <input type="text" id="bill-name" class="input-field" data-i18n-ph="bill_name_ph" placeholder="ชื่อบิล (เช่น ค่าหอ)">
+                <input type="number" id="bill-amount" class="input-field" data-i18n-ph="amount_ph" placeholder="จำนวนเงิน" inputmode="decimal">
             </div>
             <div class="form-group">
-                <input type="number" id="bill-day" class="input-field" placeholder="ครบกำหนดวันที่ (1-31)" min="1" max="31">
+                <input type="number" id="bill-day" class="input-field" data-i18n-ph="due_day_ph" placeholder="ครบกำหนดวันที่ (1-31)" min="1" max="31">
             </div>
-            <button type="button" class="btn-primary" id="add-bill-btn" style="background:#5856d6;"><i class="fas fa-plus"></i> เพิ่มบิล</button>
+            <button type="button" class="btn-primary" id="add-bill-btn" style="background:#5856d6;"><i class="fas fa-plus"></i> <span data-i18n="add_bill">เพิ่มบิล</span></button>
         </div>
         <div id="bill-list"></div>
 
-        <div class="section-title">🐷 เป้าหมายออม (ซ่อนเงิน)</div>
+        <div class="section-title">📱 <span data-i18n="installments">สินค้าผ่อนชำระ</span></div>
         <div class="card-box">
             <div class="form-group">
-                <input type="text" id="sav-name" class="input-field" placeholder="เป้าหมาย (เช่น ซื้อ iPad)">
-                <input type="number" id="sav-amount" class="input-field" placeholder="เอาไปซ่อนกี่บาท" inputmode="decimal">
+                <input type="text" id="inst-name" class="input-field" data-i18n-ph="item_name_ph" placeholder="ชื่อสินค้า (เช่น iPhone)">
+                <input type="number" id="inst-monthly" class="input-field" data-i18n-ph="monthly_ph" placeholder="ค่างวด/เดือน" inputmode="decimal">
             </div>
-            <button type="button" class="btn-primary" id="add-sav-btn" style="background: var(--income-color);"><i class="fas fa-piggy-bank"></i> เอาเงินไปซ่อน</button>
+            <div class="form-group">
+                <input type="number" id="inst-total" class="input-field" data-i18n-ph="total_months_ph" placeholder="จำนวนงวด" inputmode="decimal">
+                <input type="number" id="inst-day" class="input-field" data-i18n-ph="due_day_ph" placeholder="ครบกำหนดวันที่ (1-31)" min="1" max="31">
+            </div>
+            <button type="button" class="btn-primary" id="add-inst-btn" style="background: var(--primary);"><i class="fas fa-plus"></i> <span data-i18n="add_inst">เพิ่มรายการผ่อน</span></button>
+        </div>
+        <div id="installment-list"></div>
+
+        <div class="section-title">🐷 <span data-i18n="savings_goal">เป้าหมายออม (ซ่อนเงิน)</span></div>
+        <div class="card-box">
+            <div class="form-group">
+                <input type="text" id="sav-name" class="input-field" data-i18n-ph="goal_name_ph" placeholder="เป้าหมาย (เช่น ซื้อ iPad)">
+                <input type="number" id="sav-amount" class="input-field" data-i18n-ph="amount_to_hide_ph" placeholder="เอาไปซ่อนกี่บาท" inputmode="decimal">
+            </div>
+            <button type="button" class="btn-primary" id="add-sav-btn" style="background: var(--income-color);"><i class="fas fa-piggy-bank"></i> <span data-i18n="hide_money">เอาเงินไปซ่อน</span></button>
         </div>
         <div id="savings-list"></div>
 
-        <div class="section-title">🤝 หนี้ค้างจ่าย & ผ่อนสินค้า</div>
+        <div class="section-title">🤝 <span data-i18n="debts">หนี้ค้างจ่าย</span></div>
         <div id="debt-list"></div>
-        <div id="installment-list"></div>
 
-        <div class="section-title">💾 สำรองข้อมูล</div>
+        <div class="section-title">💾 <span data-i18n="backup_settings">สำรองข้อมูล & ตั้งค่า</span></div>
         <div class="card-box">
-            <button type="button" class="btn-secondary" id="export-btn"><i class="fas fa-download"></i> โหลดไฟล์สำรองข้อมูล</button>
-            <button type="button" class="btn-secondary" id="import-btn" style="margin-top:0.5rem;"><i class="fas fa-upload"></i> นำเข้าไฟล์สำรองข้อมูล</button>
+            <button type="button" class="btn-secondary" id="export-btn"><i class="fas fa-download"></i> <span data-i18n="export_data">โหลดไฟล์สำรองข้อมูล</span></button>
+            <button type="button" class="btn-secondary" id="import-btn" style="margin-top:0.5rem;"><i class="fas fa-upload"></i> <span data-i18n="import_data">นำเข้าไฟล์สำรองข้อมูล</span></button>
             <input type="file" id="import-file" accept=".json" style="display:none;">
+            <button type="button" class="btn-danger" id="reset-btn"><i class="fas fa-trash-alt"></i> <span data-i18n="reset_all">รีเซ็ตข้อมูลทั้งหมด</span></button>
         </div>
+
+        <div class="watermark">Dev by Phudit</div>
     </div>
 </div>
 
 <nav class="bottom-nav">
-    <button type="button" class="nav-btn active" data-page="home"><i class="fas fa-home"></i>หน้าแรก</button>
-    <button type="button" class="nav-btn" data-page="history"><i class="fas fa-history"></i>ประวัติ</button>
-    <button type="button" class="nav-btn" data-page="finance"><i class="fas fa-wallet"></i>การเงิน<div class="badge-dot" id="finance-badge"></div></button>
+    <button type="button" class="nav-btn active" data-page="home"><i class="fas fa-home"></i><span data-i18n="home">หน้าแรก</span></button>
+    <button type="button" class="nav-btn" data-page="history"><i class="fas fa-history"></i><span data-i18n="history">ประวัติ</span></button>
+    <button type="button" class="nav-btn" data-page="finance"><i class="fas fa-wallet"></i><span data-i18n="finance">การเงิน</span><div class="badge-dot" id="finance-badge"></div></button>
 </nav>
 
 <div class="modal-overlay" id="confirm-modal">
@@ -245,8 +252,8 @@
         <h3 id="modal-title">ยืนยัน</h3>
         <p id="modal-desc">คุณต้องการทำรายการนี้ใช่ไหม?</p>
         <div class="modal-actions">
-            <button class="btn-cancel" id="cancel-action">ยกเลิก</button>
-            <button class="btn-confirm danger" id="confirm-action">ยืนยัน</button>
+            <button class="btn-cancel" id="cancel-action" data-i18n="cancel">ยกเลิก</button>
+            <button class="btn-confirm danger" id="confirm-action" data-i18n="confirm">ยืนยัน</button>
         </div>
     </div>
 </div>
@@ -255,12 +262,12 @@
     <div class="modal-box">
         <h3 id="action-title">ทำรายการ</h3>
         <p id="action-desc"></p>
-        <div class="form-group" id="action-input-group" style="display:none;">
-            <input type="text" id="action-amount" class="input-field" placeholder="จำนวนเงิน" inputmode="decimal">
+        <div class="form-group" id="action-input-group" style="display:none; margin-top:1rem;">
+            <input type="text" id="action-amount" class="input-field" data-i18n-ph="amount_ph" placeholder="จำนวนเงิน" inputmode="decimal">
         </div>
         <div class="modal-actions">
-            <button class="btn-cancel" id="cancel-action-2">ยกเลิก</button>
-            <button class="btn-confirm" id="confirm-action-2">ยืนยัน</button>
+            <button class="btn-cancel" id="cancel-action-2" data-i18n="cancel">ยกเลิก</button>
+            <button class="btn-confirm" id="confirm-action-2" data-i18n="confirm">ยืนยัน</button>
         </div>
     </div>
 </div>
@@ -268,21 +275,99 @@
 <div class="toast" id="toast"></div>
 
 <script>
-    // --- Consolidated State ---
+    // --- Translations ---
+    const translations = {
+        th: {
+            total_balance: "ยอดเงินคงเหลือรวม", real_money: "เงินใช้ได้จริง", hidden_money: "เงินซ่อนไว้",
+            left_for_today: "เหลือใช้ได้วันนี้ (ไม่นับบิล/ผ่อน)", spent_today: "วันนี้ใช้ไป", total_spent_today: "วันนี้ใช้ไปทั้งหมด (กดที่นี่เพื่อตั้งงบ)",
+            bills_due_soon: "มีบิลใกล้ถึงกำหนด", upcoming_alert: "แจ้งเตือนล่วงหน้า:",
+            home: "หน้าแรก", history: "ประวัติ", finance: "การเงิน",
+            expense: "รายจ่าย", income: "รายรับ", desc_ph: "รายการ (ไม่ใส่ก็ได้)", amount_ph: "จำนวนเงิน",
+            split_bill: "🍲 แชร์ค่าใช้จ่าย / ตั้งหนี้เพื่อน", people_ph: "จำนวนคน", friend_owes_me: "เพื่อนค้างจ่ายให้ฉัน", i_owe_friend: "ฉันค้างจ่ายเพื่อน",
+            add_tx: "เพิ่มรายการ", recent_tx: "รายการล่าสุด", all_history: "ประวัติทั้งหมด", edit_delete: "แก้ไข/ลบ", done: "เสร็จแล้ว",
+            monthly_bills: "บิลประจำเดือน", bill_name_ph: "ชื่อบิล (เช่น ค่าหอ)", due_day_ph: "ครบกำหนดวันที่ (1-31)", add_bill: "เพิ่มบิล",
+            installments: "สินค้าผ่อนชำระ", item_name_ph: "ชื่อสินค้า (เช่น iPhone)", monthly_ph: "ค่างวด/เดือน", total_months_ph: "จำนวนงวด", add_inst: "เพิ่มรายการผ่อน",
+            savings_goal: "เป้าหมายออม (ซ่อนเงิน)", goal_name_ph: "เป้าหมาย (เช่น ซื้อ iPad)", amount_to_hide_ph: "เอาไปซ่อนกี่บาท", hide_money: "เอาเงินไปซ่อน",
+            debts: "หนี้ค้างจ่าย", backup_settings: "สำรองข้อมูล & ตั้งค่า", export_data: "โหลดไฟล์สำรองข้อมูล", import_data: "นำเข้าไฟล์สำรองข้อมูล", reset_all: "รีเซ็ตข้อมูลทั้งหมด",
+            confirm: "ยืนยัน", cancel: "ยกเลิก", action: "ทำรายการ",
+            general_income: "รายรับทั่วไป", general_expense: "รายจ่ายทั่วไป",
+            friend_returned: "เพื่อนคืนเงิน", i_returned: "ฉันคืนเงินเพื่อน",
+            cancel_hide_money: "ยกเลิกการซ่อนเงิน", inst_paid_prefix: "ผ่อนชำระ", bill_paid_prefix: "จ่ายบิล", withdraw_prefix: "ถอนเงินออม",
+            pay_bill: "จ่ายบิล", pay_inst: "จ่ายงวดนี้", withdraw: "ถอนออกมา", settle_debt: "เคลียร์หนี้",
+            settled: "เคลียร์แล้ว", paid: "จ่ายแล้ว", due_on: "ครบกำหนดวันที่", of_every_month: "ของทุกเดือน", monthly: "ผ่อนเดือนละ", installments_short: "งวด", money_hidden_here: "เก็บเงินส่วนนี้ไว้",
+            remaining_text: "เหลือ", total_text: "รวม",
+            today_word: "วันนี้", days_word: "วัน", overdue_word: "เกินกำหนด",
+            no_tx: "ยังไม่มีรายการ", no_bills: "ไม่มีบิลประจำเดือน", no_inst: "ไม่มีสินค้าผ่อน", no_savings: "ยังไม่ได้ซ่อนเงินไว้", no_debts: "ไม่มีหนี้ค้างจ่าย",
+            toast_saved: "บันทึกสำเร็จ!", toast_amount_req: "ใส่จำนวนเงินหน่อยนะ!", toast_budget_saved: "บันทึกงบประมาณแล้ว", toast_need_income: "ต้องมีรายรับก่อน ถึงจะตั้งงบประมาณได้นะ!",
+            prompt_budget: "ตั้งงบประมาณใช้จ่ายสูงสุดต่อวัน (บาท):", toast_budget_gt0: "งบประมาณต้องมากกว่า 0",
+            toast_bill_added: "เพิ่มบิลสำเร็จ!", toast_invalid_bill: "กรอกข้อมูลบิลให้ถูกต้อง", toast_inst_added: "เพิ่มรายการผ่อนสำเร็จ!", toast_invalid_inst: "กรอกข้อมูลผ่อนสินค้าให้ครบ", toast_sav_added: "ซ่อนเงินเรียบร้อย!", toast_invalid_sav: "กรอกข้อมูลการออมให้ถูกต้อง",
+            toast_deleted: "ลบรายการแล้ว", toast_inst_paid: "จ่ายงวดเรียบร้อย!", toast_bill_paid: "จ่ายบิลเรียบร้อย!", toast_withdraw_done: "ถอนเงินออมสำเร็จ!",
+            toast_invalid_amount: "ใส่ยอดเงินไม่ถูกต้อง", toast_amount_exceeds: "ยอดที่ใส่มากเกินกว่าที่ค้างชำระ", toast_debt_settled: "บันทึกการชำระสำเร็จ!",
+            confirm_delete_title: "ยืนยันการลบ", confirm_delete_desc: "คุณต้องการลบรายการนี้ใช่ไหม?", settle_debt_title: "เคลียร์หนี้", settle_debt_desc: "ใส่ยอดที่จ่าย/ได้รับ",
+            confirm_reset_title: "รีเซ็ตข้อมูลทั้งหมด", confirm_reset_desc: "ข้อมูลทั้งหมดจะถูกลบและกลับสู่ค่าเริ่มต้น คุณแน่ใจหรือไม่?", toast_reset_done: "รีเซ็ตข้อมูลเรียบร้อยแล้ว",
+            toast_exported: "โหลดไฟล์สำรองแล้ว", toast_imported: "นำเข้าข้อมูลสำเร็จ!", toast_invalid_file: "ไฟล์ไม่ถูกต้อง"
+        },
+        en: {
+            total_balance: "Total Balance", real_money: "Available", hidden_money: "Hidden",
+            left_for_today: "Left for today (excl. bills/inst.)", spent_today: "Spent today", total_spent_today: "Total spent today (Tap to set budget)",
+            bills_due_soon: "Bills due soon", upcoming_alert: "Upcoming alerts:",
+            home: "Home", history: "History", finance: "Finance",
+            expense: "Expense", income: "Income", desc_ph: "Description (optional)", amount_ph: "Amount",
+            split_bill: "🍲 Split bill / Track debt", people_ph: "No. of people", friend_owes_me: "Friend owes me", i_owe_friend: "I owe friend",
+            add_tx: "Add Transaction", recent_tx: "Recent Transactions", all_history: "All History", edit_delete: "Edit/Delete", done: "Done",
+            monthly_bills: "Monthly Bills", bill_name_ph: "Bill name (e.g., Rent)", due_day_ph: "Due day (1-31)", add_bill: "Add Bill",
+            installments: "Installments", item_name_ph: "Item name (e.g., iPhone)", monthly_ph: "Monthly payment", total_months_ph: "Total months", add_inst: "Add Installment",
+            savings_goal: "Savings Goal (Hide money)", goal_name_ph: "Goal (e.g., Buy iPad)", amount_to_hide_ph: "Amount to hide", hide_money: "Hide Money",
+            debts: "Debts", backup_settings: "Backup & Settings", export_data: "Export Data", import_data: "Import Data", reset_all: "Reset All Data",
+            confirm: "Confirm", cancel: "Cancel", action: "Action",
+            general_income: "General Income", general_expense: "General Expense",
+            friend_returned: "Friend returned money", i_returned: "I returned money",
+            cancel_hide_money: "Cancel hiding money", inst_paid_prefix: "Installment for", bill_paid_prefix: "Paid bill", withdraw_prefix: "Withdrew savings",
+            pay_bill: "Pay Bill", pay_inst: "Pay This Month", withdraw: "Withdraw", settle_debt: "Settle Debt",
+            settled: "Settled", paid: "Paid", due_on: "Due on", of_every_month: "of every month", monthly: "Monthly", installments_short: "months", money_hidden_here: "Money hidden here",
+            remaining_text: "Remaining", total_text: "Total",
+            today_word: "Today", days_word: "days", overdue_word: "Overdue",
+            no_tx: "No transactions yet", no_bills: "No monthly bills", no_inst: "No installments", no_savings: "No hidden savings", no_debts: "No debts",
+            toast_saved: "Saved successfully!", toast_amount_req: "Please enter an amount!", toast_budget_saved: "Budget saved", toast_need_income: "You need income before setting a budget!",
+            prompt_budget: "Set maximum daily budget (THB):", toast_budget_gt0: "Budget must be greater than 0",
+            toast_bill_added: "Bill added!", toast_invalid_bill: "Please enter valid bill data", toast_inst_added: "Installment added!", toast_invalid_inst: "Please enter valid installment data", toast_sav_added: "Money hidden!", toast_invalid_sav: "Please enter valid savings data",
+            toast_deleted: "Deleted", toast_inst_paid: "Installment paid!", toast_bill_paid: "Bill paid!", toast_withdraw_done: "Savings withdrawn!",
+            toast_invalid_amount: "Invalid amount", toast_amount_exceeds: "Amount exceeds remaining balance", toast_debt_settled: "Payment recorded!",
+            confirm_delete_title: "Confirm Delete", confirm_delete_desc: "Are you sure you want to delete this?", settle_debt_title: "Settle Debt", settle_debt_desc: "Enter paid/received amount",
+            confirm_reset_title: "Reset All Data", confirm_reset_desc: "All data will be erased and reset to default. Are you sure?", toast_reset_done: "Data reset successfully",
+            toast_exported: "Backup exported", toast_imported: "Data imported successfully!", toast_invalid_file: "Invalid file"
+        }
+    };
+
+    // --- Safe Storage & State ---
     function safeGet(key, fallback) { try { const d = localStorage.getItem(key); return d ? JSON.parse(d) : fallback; } catch (e) { return fallback; } }
     function safeSet(key, data) { try { localStorage.setItem(key, JSON.stringify(data)); } catch (e) {} }
 
-    let state = safeGet('ff_state_v2', {
-        transactions: [],
-        installments: [],
-        bills: [],
-        savings: [],
-        dailyBudget: 0
-    });
+    let state = safeGet('ff_state_v2', { transactions: [], installments: [], bills: [], savings: [], dailyBudget: 0, lang: 'th' });
+    if (!state.lang) state.lang = 'th'; // Fallback for old saves
     let currentType = 'expense';
-    let actionTarget = null; // { id, type, action, desc }
+    let actionTarget = null;
     let toastTimer = null;
     const $ = id => document.getElementById(id);
+    const t = key => translations[state.lang][key] || key;
+
+    // --- Language Logic ---
+    function applyTranslations() {
+        document.querySelectorAll('[data-i18n]').forEach(el => {
+            const key = el.getAttribute('data-i18n');
+            if (el.tagName === 'OPTION') { el.innerText = t(key); }
+            else { el.innerText = t(key); }
+        });
+        document.querySelectorAll('[data-i18n-ph]').forEach(el => {
+            el.placeholder = t(el.getAttribute('data-i18n-ph'));
+        });
+        $('lang-btn').innerText = state.lang === 'th' ? 'EN' : 'TH';
+    }
+
+    $('lang-btn').addEventListener('click', () => {
+        state.lang = state.lang === 'th' ? 'en' : 'th';
+        save(); applyTranslations(); renderAll();
+    });
 
     // --- Navigation ---
     document.querySelectorAll('.nav-btn').forEach(btn => {
@@ -310,12 +395,11 @@
         document.body.classList.toggle('edit-mode');
         const isOn = document.body.classList.contains('edit-mode');
         document.querySelectorAll('.edit-toggle-btn').forEach(btn => {
-            btn.innerHTML = isOn ? '<i class="fas fa-times"></i> เสร็จแล้ว' : '<i class="fas fa-edit"></i> แก้ไข/ลบ';
+            btn.innerHTML = isOn ? `<i class="fas fa-times"></i> ${t('done')}` : `<i class="fas fa-edit"></i> ${t('edit_delete')}`;
             btn.classList.toggle('active', isOn);
         });
     }
 
-    // --- Budget Logic ---
     function calculateMainBalance() {
         return state.transactions.reduce((acc, t) => {
             const amt = t.amount || t.totalAmount || 0;
@@ -329,157 +413,168 @@
 
     $('budget-card').addEventListener('click', () => {
         const mainBal = calculateMainBalance();
-        if (mainBal <= 0) return showToast('ต้องมีรายรับก่อน ถึงจะตั้งงบประมาณได้นะ!', true);
-        const input = prompt('ตั้งงบประมาณใช้จ่ายสูงสุดต่อวัน (บาท):', state.dailyBudget || mainBal);
+        if (mainBal <= 0) return showToast(t('toast_need_income'), true);
+        const input = prompt(t('prompt_budget'), state.dailyBudget || mainBal);
         if (input !== null) {
             const num = parseFloat(input) || 0;
-            if (num <= 0) return showToast('งบประมาณต้องมากกว่า 0', true);
-            state.dailyBudget = num;
-            save(); renderAll(); showToast('บันทึกงบประมาณแล้ว');
+            if (num <= 0) return showToast(t('toast_budget_gt0'), true);
+            state.dailyBudget = num; save(); renderAll(); showToast(t('toast_budget_saved'));
         }
     });
 
     const fmt = num => '฿' + (num || 0).toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,');
+    const getLocale = () => state.lang === 'th' ? 'th-TH' : 'en-US';
+    const getDateStr = (ts) => new Date(ts).toLocaleDateString(getLocale(), { day: '2-digit', month: 'short' });
 
-    // --- Add Transaction ---
+    // --- Add Transactions ---
     $('add-btn').addEventListener('click', () => {
-        const desc = $('description').value.trim() || (currentType === 'income' ? 'รายรับทั่วไป' : 'รายจ่ายทั่วไป');
+        const desc = $('description').value.trim() || (currentType === 'income' ? t('general_income') : t('general_expense'));
         const amt = parseFloat($('amount').value.replace(/[^0-9.]/g, ''));
-        if (isNaN(amt) || amt <= 0) return showToast('ใส่จำนวนเงินหน่อยนะ!', true);
+        if (isNaN(amt) || amt <= 0) return showToast(t('toast_amount_req'), true);
 
-        let newTx = { id: Date.now(), description: desc, amount: amt, type: currentType, dateStr: new Date().toLocaleDateString('th-TH', { day: '2-digit', month: 'short' }), timestamp: Date.now() };
-
+        let newTx = { id: Date.now(), description: desc, amount: amt, type: currentType, dateStr: getDateStr(Date.now()), timestamp: Date.now() };
         if ($('split-check').checked) {
             const people = parseInt($('split-people').value) || 2;
-            newTx.type = 'debt';
-            newTx.subtype = $('split-type').value;
-            newTx.splitPeople = people;
-            newTx.totalAmount = amt;
-            newTx.paidAmount = 0;
-            newTx.description = desc + ` (แชร์ ${people} คน)`;
-            newTx.settled = false;
-            delete newTx.amount;
+            newTx.type = 'debt'; newTx.subtype = $('split-type').value; newTx.splitPeople = people;
+            newTx.totalAmount = amt; newTx.paidAmount = 0; newTx.description = desc + ` (${t('people_ph').split(' ')[0]} ${people})`; newTx.settled = false; delete newTx.amount;
         }
-
-        state.transactions.unshift(newTx);
-        save();
+        state.transactions.unshift(newTx); save();
         $('description').value = ''; $('amount').value = ''; $('split-check').checked = false; $('split-box').classList.remove('active');
-        showToast('บันทึกสำเร็จ!'); renderAll();
+        showToast(t('toast_saved')); renderAll();
     });
 
-    // --- Add Installment, Bill, Savings ---
-    // (Installment Add UI omitted for brevity, assuming it's there. Let's add logic for Bill and Savings)
     $('add-bill-btn').addEventListener('click', () => {
-        const name = $('bill-name').value.trim();
-        const amount = parseFloat($('bill-amount').value);
-        const day = parseInt($('bill-day').value);
-        if (!name || isNaN(amount) || isNaN(day) || day < 1 || day > 31) return showToast('กรอกข้อมูลบิลให้ถูกต้อง', true);
+        const name = $('bill-name').value.trim(); const amount = parseFloat($('bill-amount').value); const day = parseInt($('bill-day').value);
+        if (!name || isNaN(amount) || isNaN(day) || day < 1 || day > 31) return showToast(t('toast_invalid_bill'), true);
         state.bills.push({ id: Date.now(), name, amount, dueDay: day, lastPaid: '' });
         save(); $('bill-name').value=''; $('bill-amount').value=''; $('bill-day').value='';
-        showToast('เพิ่มบิลสำเร็จ!'); renderAll();
+        showToast(t('toast_bill_added')); renderAll();
+    });
+
+    $('add-inst-btn').addEventListener('click', () => {
+        const name = $('inst-name').value.trim(); const monthly = parseFloat($('inst-monthly').value);
+        const total = parseInt($('inst-total').value); const day = parseInt($('inst-day').value) || 1;
+        if (!name || isNaN(monthly) || isNaN(total)) return showToast(t('toast_invalid_inst'), true);
+        state.installments.push({ id: Date.now(), name, monthly, totalMonths: total, paidMonths: 0, dueDay: day, lastPaidMonth: '' });
+        save(); $('inst-name').value=''; $('inst-monthly').value=''; $('inst-total').value=''; $('inst-day').value='';
+        showToast(t('toast_inst_added')); renderAll();
     });
 
     $('add-sav-btn').addEventListener('click', () => {
-        const name = $('sav-name').value.trim();
-        const amount = parseFloat($('sav-amount').value);
-        if (!name || isNaN(amount) || amount <= 0) return showToast('กรอกข้อมูลการออมให้ถูกต้อง', true);
-        
-        state.savings.push({ id: Date.now(), name, current: amount, target: 0 });
-        state.transactions.unshift({ id: Date.now()+1, description: `ซ่อนเงินไป: ${name}`, amount, type: 'expense', dateStr: new Date().toLocaleDateString('th-TH', { day: '2-digit', month: 'short' }), timestamp: Date.now() });
+        const name = $('sav-name').value.trim(); const amount = parseFloat($('sav-amount').value);
+        if (!name || isNaN(amount) || amount <= 0) return showToast(t('toast_invalid_sav'), true);
+        state.savings.push({ id: Date.now(), name, current: amount });
+        state.transactions.unshift({ id: Date.now()+1, description: `${t('hide_money')}: ${name}`, amount, type: 'expense', dateStr: getDateStr(Date.now()), timestamp: Date.now() });
         save(); $('sav-name').value=''; $('sav-amount').value='';
-        showToast('ซ่อนเงินเรียบร้อย!'); renderAll();
+        showToast(t('toast_sav_added')); renderAll();
     });
 
-    // --- Action Modals (Delete, Pay, Withdraw) ---
+    // --- Modals ---
     function openActionModal(title, desc, target, showInput = false, isDanger = false) {
         actionTarget = target;
-        $('action-title').innerText = title;
-        $('action-desc').innerText = desc;
-        $('action-input-group').style.display = showInput ? 'flex' : 'none';
-        $('action-amount').value = '';
+        $('action-title').innerText = title; $('action-desc').innerText = desc;
+        $('action-input-group').style.display = showInput ? 'flex' : 'none'; $('action-amount').value = '';
         $('confirm-action-2').className = isDanger ? 'btn-confirm danger' : 'btn-confirm';
         $('action-modal').classList.add('show');
     }
+
+    function openConfirmModal(title, desc, target, isDanger = true) {
+        actionTarget = target;
+        $('modal-title').innerText = title; $('modal-desc').innerText = desc;
+        $('confirm-action').className = isDanger ? 'btn-confirm danger' : 'btn-confirm';
+        $('confirm-modal').classList.add('show');
+    }
+
+    $('cancel-action').addEventListener('click', () => $('confirm-modal').classList.remove('show'));
+    $('confirm-action').addEventListener('click', () => {
+        if (!actionTarget) return;
+        if (actionTarget.action === 'reset') {
+            state = { transactions: [], installments: [], bills: [], savings: [], dailyBudget: 0, lang: state.lang };
+            save(); renderAll(); showToast(t('toast_reset_done'));
+        }
+        $('confirm-modal').classList.remove('show');
+    });
 
     $('cancel-action-2').addEventListener('click', () => $('action-modal').classList.remove('show'));
     $('confirm-action-2').addEventListener('click', () => {
         if (!actionTarget) return;
         const { id, type, action } = actionTarget;
-        
+        const currentMonth = new Date().toLocaleString('en-US', { month: '2-digit', year: 'numeric' });
+
         if (action === 'delete') {
             if (type === 'tx') state.transactions = state.transactions.filter(t => t.id !== id);
             else if (type === 'inst') state.installments = state.installments.filter(i => i.id !== id);
             else if (type === 'bill') state.bills = state.bills.filter(b => b.id !== id);
-            else if (type === 'sav') state.savings = state.savings.filter(s => s.id !== id);
-            showToast('ลบรายการแล้ว');
+            else if (type === 'sav') {
+                let sav = state.savings.find(s => s.id === id);
+                if (sav) state.transactions.unshift({ id: Date.now(), description: `${t('cancel_hide_money')}: ${sav.name}`, amount: sav.current, type: 'income', dateStr: getDateStr(Date.now()), timestamp: Date.now() });
+                state.savings = state.savings.filter(s => s.id !== id);
+            }
+            showToast(t('toast_deleted'));
         } 
         else if (action === 'payInst') {
             let inst = state.installments.find(i => i.id === id);
             if (inst && inst.paidMonths < inst.totalMonths) {
-                inst.paidMonths++;
-                inst.lastPaidMonth = new Date().toLocaleString('en-US', { month: '2-digit', year: 'numeric' });
-                state.transactions.unshift({ id: Date.now(), description: `ผ่อนชำระ ${inst.name} (งวด ${inst.paidMonths}/${inst.totalMonths})`, amount: inst.monthly, type: 'expense', dateStr: new Date().toLocaleDateString('th-TH', { day: '2-digit', month: 'short' }), timestamp: Date.now() });
-                showToast('จ่ายงวดเรียบร้อย!');
+                inst.paidMonths++; inst.lastPaidMonth = currentMonth;
+                state.transactions.unshift({ id: Date.now(), description: `${t('inst_paid_prefix')} ${inst.name} (${inst.paidMonths}/${inst.totalMonths})`, amount: inst.monthly, type: 'expense', subtype: 'inst', dateStr: getDateStr(Date.now()), timestamp: Date.now() });
+                showToast(t('toast_inst_paid'));
             }
         }
         else if (action === 'payBill') {
             let bill = state.bills.find(b => b.id === id);
             if (bill) {
-                bill.lastPaid = new Date().toLocaleString('en-US', { month: '2-digit', year: 'numeric' });
-                state.transactions.unshift({ id: Date.now(), description: `จ่ายบิล ${bill.name}`, amount: bill.amount, type: 'expense', dateStr: new Date().toLocaleDateString('th-TH', { day: '2-digit', month: 'short' }), timestamp: Date.now() });
-                showToast('จ่ายบิลเรียบร้อย!');
+                bill.lastPaid = currentMonth;
+                state.transactions.unshift({ id: Date.now(), description: `${t('bill_paid_prefix')} ${bill.name}`, amount: bill.amount, type: 'expense', subtype: 'bill', dateStr: getDateStr(Date.now()), timestamp: Date.now() });
+                showToast(t('toast_bill_paid'));
             }
         }
         else if (action === 'withdrawSav') {
             let sav = state.savings.find(s => s.id === id);
             if (sav) {
-                state.transactions.unshift({ id: Date.now(), description: `ถอนเงินออม: ${sav.name}`, amount: sav.current, type: 'income', dateStr: new Date().toLocaleDateString('th-TH', { day: '2-digit', month: 'short' }), timestamp: Date.now() });
+                state.transactions.unshift({ id: Date.now(), description: `${t('withdraw_prefix')}: ${sav.name}`, amount: sav.current, type: 'income', dateStr: getDateStr(Date.now()), timestamp: Date.now() });
                 state.savings = state.savings.filter(s => s.id !== id);
-                showToast('ถอนเงินออมสำเร็จ!');
+                showToast(t('toast_withdraw_done'));
             }
         }
         else if (action === 'payDebt') {
             const payVal = parseFloat($('action-amount').value.replace(/[^0-9.]/g, ''));
-            if (isNaN(payVal) || payVal <= 0) return showToast('ใส่ยอดเงินไม่ถูกต้อง', true);
+            if (isNaN(payVal) || payVal <= 0) return showToast(t('toast_invalid_amount'), true);
             const tx = state.transactions.find(t => t.id === id);
             if (!tx) return;
             const remaining = (tx.totalAmount || 0) - (tx.paidAmount || 0);
-            if (payVal > remaining) return showToast('ยอดที่ใส่มากเกินกว่าที่ค้างชำระ', true);
+            if (payVal > remaining) return showToast(t('toast_amount_exceeds'), true);
             tx.paidAmount = (tx.paidAmount || 0) + payVal;
             if (tx.paidAmount >= tx.totalAmount) tx.settled = true;
-            if (tx.subtype === 'lend') state.transactions.unshift({ id: Date.now(), description: `เพื่อนคืนเงิน`, amount: payVal, type: 'income', dateStr: new Date().toLocaleDateString('th-TH', { day: '2-digit', month: 'short' }), timestamp: Date.now() });
-            else state.transactions.unshift({ id: Date.now(), description: `ฉันคืนเงินเพื่อน`, amount: payVal, type: 'expense', dateStr: new Date().toLocaleDateString('th-TH', { day: '2-digit', month: 'short' }), timestamp: Date.now() });
-            showToast('บันทึกการชำระสำเร็จ!');
+            if (tx.subtype === 'lend') state.transactions.unshift({ id: Date.now(), description: t('friend_returned'), amount: payVal, type: 'income', dateStr: getDateStr(Date.now()), timestamp: Date.now() });
+            else state.transactions.unshift({ id: Date.now(), description: t('i_returned'), amount: payVal, type: 'expense', dateStr: getDateStr(Date.now()), timestamp: Date.now() });
+            showToast(t('toast_debt_settled'));
         }
-
-        $('action-modal').classList.remove('show');
-        save(); renderAll();
+        $('action-modal').classList.remove('show'); save(); renderAll();
     });
 
-    // --- Notification Logic ---
+    // --- Notifications ---
     function checkNotifications() {
-        const today = new Date();
-        const currentDay = today.getDate();
+        const today = new Date(); const currentDay = today.getDate();
         const currentMonth = today.toLocaleString('en-US', { month: '2-digit', year: 'numeric' });
         let alerts = [];
 
         state.bills.forEach(bill => {
             if (bill.lastPaid !== currentMonth) {
                 const daysLeft = bill.dueDay - currentDay;
-                if (daysLeft >= 0 && daysLeft <= 7) alerts.push(`${bill.name} (${daysLeft === 0 ? 'วันนี้' : daysLeft + ' วัน'})`);
-                else if (daysLeft < 0) alerts.push(`${bill.name} (เกินกำหนด)`);
+                if (daysLeft >= 0 && daysLeft <= 7) alerts.push(`${bill.name} (${daysLeft === 0 ? t('today_word') : daysLeft + ' ' + t('days_word')})`);
+                else if (daysLeft < 0) alerts.push(`${bill.name} (${t('overdue_word')})`);
             }
         });
 
         state.installments.forEach(inst => {
             if (inst.paidMonths < inst.totalMonths && inst.lastPaidMonth !== currentMonth) {
                 const daysLeft = (inst.dueDay || 1) - currentDay;
-                if (daysLeft >= 0 && daysLeft <= 7) alerts.push(`ผ่อน ${inst.name} (${daysLeft === 0 ? 'วันนี้' : daysLeft + ' วัน'})`);
+                if (daysLeft >= 0 && daysLeft <= 7) alerts.push(`${inst.name} (${daysLeft === 0 ? t('today_word') : daysLeft + ' ' + t('days_word')})`);
             }
         });
 
         if (alerts.length > 0) {
-            $('notif-text').innerText = `แจ้งเตือนล่วงหน้า: ${alerts.join(', ')}`;
+            $('notif-text').innerText = `${t('upcoming_alert')} ${alerts.join(', ')}`;
             $('notif-banner').classList.add('show');
             $('finance-badge').classList.add('show');
         } else {
@@ -488,7 +583,7 @@
         }
     }
 
-    // --- Render Functions ---
+    // --- Render ---
     function updateUI() {
         const mainBalance = calculateMainBalance();
         const savingsTotal = state.savings.reduce((acc, s) => acc + s.current, 0);
@@ -496,79 +591,84 @@
 
         $('balance').innerText = fmt(totalBalance);
         $('balance').className = 'balance ' + (totalBalance < 0 ? 'negative' : '');
-        $('balance-sub').innerText = `เงินใช้ได้จริง ${fmt(mainBalance)} | เงินซ่อนไว้ ${fmt(savingsTotal)}`;
+        $('balance-sub').innerText = `${t('real_money')} ${fmt(mainBalance)} | ${t('hidden_money')} ${fmt(savingsTotal)}`;
 
         const todayStr = new Date().toDateString();
-        const todayExpense = state.transactions.filter(t => t.type === 'expense' && new Date(t.timestamp).toDateString() === todayStr).reduce((acc, t) => acc + t.amount, 0);
+        const todayExpense = state.transactions.filter(tx => tx.type === 'expense' && !tx.subtype && new Date(tx.timestamp).toDateString() === todayStr).reduce((acc, tx) => acc + tx.amount, 0);
 
         if (state.dailyBudget > 0) {
             const remaining = state.dailyBudget - todayExpense;
             $('daily-remaining').innerText = fmt(remaining);
             $('daily-remaining').className = 'budget-amount ' + (remaining < 0 ? 'over' : '');
-            $('budget-sub-text').innerText = `วันนี้ใช้ไป ${fmt(todayExpense)} / งบ ${fmt(state.dailyBudget)}`;
+            $('budget-sub-text').innerText = `${t('spent_today')} ${fmt(todayExpense)} / ${fmt(state.dailyBudget)}`;
         } else {
             $('daily-remaining').innerText = fmt(todayExpense);
             $('daily-remaining').className = 'budget-amount';
-            $('budget-sub-text').innerText = 'วันนี้ใช้ไปทั้งหมด (กดที่นี่เพื่อตั้งงบ)';
+            $('budget-sub-text').innerText = t('total_spent_today');
         }
         checkNotifications();
     }
 
     function renderTxList(list, targetEl, limit = 999) {
         const container = $(targetEl);
-        if (list.length === 0) return container.innerHTML = `<div class="empty-state"><i class="fas fa-receipt"></i><p>ยังไม่มีรายการ</p></div>`;
-        
+        if (list.length === 0) return container.innerHTML = `<div class="empty-state"><i class="fas fa-receipt"></i><p>${t('no_tx')}</p></div>`;
         const grouped = {};
-        list.slice(0, limit).forEach(t => { if (!grouped[t.dateStr]) grouped[t.dateStr] = []; grouped[t.dateStr].push(t); });
-
+        list.slice(0, limit).forEach(tx => { if (!grouped[tx.dateStr]) grouped[tx.dateStr] = []; grouped[tx.dateStr].push(tx); });
         let html = '';
         for (const date in grouped) {
             html += `<div style="margin: 1rem 0 0.5rem; font-size: 0.75rem; color: var(--text-muted); font-weight: 600; padding-left: 0.5rem;">${date}</div>`;
-            grouped[date].forEach(t => {
-                let iconClass = t.type, sign = '-', amountClass = t.type, icon = 'arrow-up', displayAmount = t.amount || 0;
-                if (t.type === 'income') { sign = '+'; icon = 'arrow-down'; }
-                if (t.type === 'expense') { sign = '-'; icon = 'arrow-up'; }
-                if (t.type === 'debt') { iconClass = 'debt'; icon = t.subtype === 'lend' ? 'hand-holding-usd' : 'hand-holding'; displayAmount = t.totalAmount || 0; amountClass = t.settled ? 'settled' : 'debt'; sign = t.subtype === 'lend' ? '+' : '-'; }
+            grouped[date].forEach(tx => {
+                let iconClass = tx.type, sign = '-', amountClass = tx.type, icon = 'arrow-up', displayAmount = tx.amount || 0;
+                if (tx.type === 'income') { sign = '+'; icon = 'arrow-down'; }
+                if (tx.type === 'expense') { sign = '-'; icon = 'arrow-up'; }
+                if (tx.type === 'debt') { iconClass = 'debt'; icon = tx.subtype === 'lend' ? 'hand-holding-usd' : 'hand-holding'; displayAmount = tx.totalAmount || 0; amountClass = tx.settled ? 'settled' : 'debt'; sign = tx.subtype === 'lend' ? '+' : '-'; }
                 
                 let rightContent = `<span class="tx-amount ${amountClass}">${sign}${fmt(displayAmount)}</span>`;
-                if (t.type === 'debt' && !t.settled) rightContent += `<button onclick="openActionModal('เคลียร์หนี้','ใส่ยอดที่จ่าย/ได้รับ', {id:${t.id},type:'tx',action:'payDebt'}, true)" class="action-btn-sm warn">เคลียร์หนี้</button>`;
+                if (tx.type === 'debt' && !tx.settled) rightContent += `<button onclick="openActionModal('${t('settle_debt_title')}','${t('settle_debt_desc')}', {id:${tx.id},type:'tx',action:'payDebt'}, true)" class="action-btn-sm warn">${t('settle_debt')}</button>`;
 
-                html += `<div class="tx-item"><div class="delete-btn" onclick="openActionModal('ยืนยันการลบ','${t.description.replace(/'/g, "\\'")}', {id:${t.id},type:'tx',action:'delete'}, false, true)"><i class="fas fa-times"></i></div><div class="tx-icon ${iconClass}"><i class="fas fa-${icon}"></i></div><div class="tx-info"><span>${t.description}</span><small>${t.type === 'debt' ? (t.subtype === 'lend' ? 'เพื่อนค้างจ่าย' : 'ฉันค้างจ่าย') : (t.type === 'income' ? 'รายรับ' : 'รายจ่าย')}</small></div><div class="tx-right">${rightContent}</div></div>`;
+                html += `<div class="tx-item"><div class="delete-btn" onclick="openActionModal('${t('confirm_delete_title')}','${tx.description.replace(/'/g, "\\'")}', {id:${tx.id},type:'tx',action:'delete'}, false, true)"><i class="fas fa-times"></i></div><div class="tx-icon ${iconClass}"><i class="fas fa-${icon}"></i></div><div class="tx-info"><span>${tx.description}</span><small>${tx.type === 'debt' ? (tx.subtype === 'lend' ? t('friend_owes_me') : t('i_owe_friend')) : (tx.type === 'income' ? t('income') : t('expense'))}</small></div><div class="tx-right">${rightContent}</div></div>`;
             });
         }
         container.innerHTML = html;
     }
 
     function renderFinancePage() {
-        // 1. Bills
+        const currentMonth = new Date().toLocaleString('en-US', { month: '2-digit', year: 'numeric' });
+
+        // Bills
         const billContainer = $('bill-list');
-        if (state.bills.length === 0) billContainer.innerHTML = `<div class="empty-state" style="padding:1rem;"><i class="fas fa-file-invoice"></i><p>ไม่มีบิลประจำเดือน</p></div>`;
+        if (state.bills.length === 0) billContainer.innerHTML = `<div class="empty-state" style="padding:1rem;"><i class="fas fa-file-invoice"></i><p>${t('no_bills')}</p></div>`;
         else {
-            const currentMonth = new Date().toLocaleString('en-US', { month: '2-digit', year: 'numeric' });
             billContainer.innerHTML = state.bills.map(b => {
                 const isPaid = b.lastPaid === currentMonth;
-                return `<div class="tx-item"><div class="delete-btn" onclick="openActionModal('ยืนยันการลบ','${b.name.replace(/'/g, "\\'")}', {id:${b.id},type:'bill',action:'delete'}, false, true)"><i class="fas fa-times"></i></div><div class="tx-icon bill"><i class="fas fa-file-invoice-dollar"></i></div><div class="tx-info"><span>${b.name}</span><small>ครบกำหนดวันที่ ${b.dueDay} ของทุกเดือน</small></div><div class="tx-right"><span class="tx-amount ${isPaid ? 'settled' : 'expense'}">${isPaid ? 'จ่ายแล้ว' : '-'+fmt(b.amount)}</span>${!isPaid ? `<button onclick="openActionModal('จ่ายบิล','${b.name.replace(/'/g, "\\'")}', {id:${b.id},type:'bill',action:'payBill'})" class="action-btn-sm">จ่ายบิล</button>` : ''}</div></div>`;
+                return `<div class="tx-item"><div class="delete-btn" onclick="openActionModal('${t('confirm_delete_title')}','${b.name.replace(/'/g, "\\'")}', {id:${b.id},type:'bill',action:'delete'}, false, true)"><i class="fas fa-times"></i></div><div class="tx-icon bill"><i class="fas fa-file-invoice-dollar"></i></div><div class="tx-info"><span>${b.name}</span><small>${t('due_on')} ${b.dueDay} ${t('of_every_month')}</small></div><div class="tx-right"><span class="tx-amount ${isPaid ? 'settled' : 'expense'}">${isPaid ? t('paid') : '-'+fmt(b.amount)}</span>${!isPaid ? `<button onclick="openActionModal('${t('pay_bill')}','${b.name.replace(/'/g, "\\'")}', {id:${b.id},type:'bill',action:'payBill'})" class="action-btn-sm">${t('pay_bill')}</button>` : ''}</div></div>`;
             }).join('');
         }
 
-        // 2. Savings
+        // Installments
+        const instContainer = $('installment-list');
+        if (state.installments.length === 0) instContainer.innerHTML = `<div class="empty-state" style="padding:1rem;"><i class="fas fa-mobile-alt"></i><p>${t('no_inst')}</p></div>`;
+        else {
+            instContainer.innerHTML = state.installments.map(inst => {
+                const isDone = inst.paidMonths >= inst.totalMonths;
+                const isPaidThisMonth = inst.lastPaidMonth === currentMonth;
+                const progress = (inst.paidMonths / inst.totalMonths) * 100;
+                return `<div class="tx-item" style="flex-direction:column;align-items:stretch;"><div class="delete-btn" onclick="openActionModal('${t('confirm_delete_title')}','${inst.name.replace(/'/g, "\\'")}', {id:${inst.id},type:'inst',action:'delete'}, false, true)"><i class="fas fa-times"></i></div><div style="display:flex;justify-content:space-between;width:100%;margin-bottom:8px;"><div class="tx-info" style="display:flex;align-items:center;"><div class="tx-icon inst" style="margin-right:0.8rem;"><i class="fas fa-mobile-alt"></i></div><div><span>${inst.name}</span><small>${t('monthly')} ${fmt(inst.monthly)} (${t('due_on')} ${inst.dueDay})</small></div></div><div class="tx-right"><span class="tx-amount ${isDone?'settled':''}" style="color:var(--primary);">${inst.paidMonths}/${inst.totalMonths} ${t('installments_short')}</span>${!isDone && !isPaidThisMonth?`<button onclick="openActionModal('${t('pay_inst')}','${inst.name.replace(/'/g, "\\'")}', {id:${inst.id},type:'inst',action:'payInst'})" class="action-btn-sm">${t('pay_inst')}</button>`:''}</div></div><div class="progress-bar"><div class="progress-fill" style="width:${progress}%;${isDone?'background:var(--income-color);':''}"></div></div></div>`;
+            }).join('');
+        }
+
+        // Savings
         const savContainer = $('savings-list');
-        if (state.savings.length === 0) savContainer.innerHTML = `<div class="empty-state" style="padding:1rem;"><i class="fas fa-piggy-bank"></i><p>ยังไม่ได้ซ่อนเงินไว้</p></div>`;
+        if (state.savings.length === 0) savContainer.innerHTML = `<div class="empty-state" style="padding:1rem;"><i class="fas fa-piggy-bank"></i><p>${t('no_savings')}</p></div>`;
         else {
             savContainer.innerHTML = state.savings.map(s => {
-                return `<div class="tx-item"><div class="delete-btn" onclick="openActionModal('ยืนยันการลบ','${s.name.replace(/'/g, "\\'")}', {id:${s.id},type:'sav',action:'delete'}, false, true)"><i class="fas fa-times"></i></div><div class="tx-icon savings"><i class="fas fa-piggy-bank"></i></div><div class="tx-info"><span>${s.name}</span><small>เก็บเงินส่วนนี้ไว้</small></div><div class="tx-right"><span class="tx-amount income">${fmt(s.current)}</span><button onclick="openActionModal('ถอนเงินออม','${s.name.replace(/'/g, "\\'")}', {id:${s.id},type:'sav',action:'withdrawSav'})" class="action-btn-sm">ถอนออกมา</button></div></div>`;
+                return `<div class="tx-item"><div class="delete-btn" onclick="openActionModal('${t('confirm_delete_title')}','${s.name.replace(/'/g, "\\'")}', {id:${s.id},type:'sav',action:'delete'}, false, true)"><i class="fas fa-times"></i></div><div class="tx-icon savings"><i class="fas fa-piggy-bank"></i></div><div class="tx-info"><span>${s.name}</span><small>${t('money_hidden_here')}</small></div><div class="tx-right"><span class="tx-amount income">${fmt(s.current)}</span><button onclick="openActionModal('${t('withdraw')}','${s.name.replace(/'/g, "\\'")}', {id:${s.id},type:'sav',action:'withdrawSav'})" class="action-btn-sm">${t('withdraw')}</button></div></div>`;
             }).join('');
         }
 
-        // 3. Debts & Installments (Similar to previous, but using openActionModal)
-        const debts = state.transactions.filter(t => t.type === 'debt');
-        $('debt-list').innerHTML = debts.length === 0 ? `<div class="empty-state" style="padding:1rem;"><i class="fas fa-handshake"></i><p>ไม่มีหนี้ค้างจ่าย</p></div>` : debts.map(t => `<div class="tx-item"><div class="delete-btn" onclick="openActionModal('ยืนยันการลบ','${t.description.replace(/'/g, "\\'")}', {id:${t.id},type:'tx',action:'delete'}, false, true)"><i class="fas fa-times"></i></div><div class="tx-icon debt"><i class="fas fa-hand-holding-usd"></i></div><div class="tx-info"><span>${t.description}</span><small>เหลือ ${fmt((t.totalAmount||0)-(t.paidAmount||0))} / ${fmt(t.totalAmount||0)}</small></div><div class="tx-right">${!t.settled ? `<button onclick="openActionModal('เคลียร์หนี้','ใส่ยอดที่จ่าย/ได้รับ', {id:${t.id},type:'tx',action:'payDebt'}, true)" class="action-btn-sm warn">เคลียร์หนี้</button>` : '<small style="color:#ccc;">เคลียร์แล้ว</small>'}</div></div>`).join('');
-        
-        $('installment-list').innerHTML = state.installments.length === 0 ? `<div class="empty-state" style="padding:1rem;"><i class="fas fa-mobile-alt"></i><p>ไม่มีสินค้าผ่อน</p></div>` : state.installments.map(inst => {
-            const isDone = inst.paidMonths >= inst.totalMonths;
-            const progress = (inst.paidMonths / inst.totalMonths) * 100;
-            return `<div class="tx-item" style="flex-direction:column;align-items:stretch;"><div class="delete-btn" onclick="openActionModal('ยืนยันการลบ','${inst.name.replace(/'/g, "\\'")}', {id:${inst.id},type:'inst',action:'delete'}, false, true)"><i class="fas fa-times"></i></div><div style="display:flex;justify-content:space-between;width:100%;margin-bottom:8px;"><div class="tx-info" style="display:flex;align-items:center;"><div class="tx-icon inst" style="margin-right:0.8rem;"><i class="fas fa-mobile-alt"></i></div><div><span>${inst.name}</span><small>ผ่อนเดือนละ ${fmt(inst.monthly)}</small></div></div><div class="tx-right"><span class="tx-amount ${isDone?'settled':''}" style="color:var(--primary);">${inst.paidMonths}/${inst.totalMonths} งวด</span>${!isDone?`<button onclick="openActionModal('จ่ายงวด','${inst.name.replace(/'/g, "\\'")}', {id:${inst.id},type:'inst',action:'payInst'})" class="action-btn-sm">จ่ายงวดนี้</button>`:''}</div></div><div class="progress-bar"><div class="progress-fill" style="width:${progress}%;${isDone?'background:var(--income-color);':''}"></div></div></div>`;
-        }).join('');
+        // Debts
+        const debts = state.transactions.filter(tx => tx.type === 'debt');
+        $('debt-list').innerHTML = debts.length === 0 ? `<div class="empty-state" style="padding:1rem;"><i class="fas fa-handshake"></i><p>${t('no_debts')}</p></div>` : debts.map(tx => `<div class="tx-item"><div class="delete-btn" onclick="openActionModal('${t('confirm_delete_title')}','${tx.description.replace(/'/g, "\\'")}', {id:${tx.id},type:'tx',action:'delete'}, false, true)"><i class="fas fa-times"></i></div><div class="tx-icon debt"><i class="fas fa-hand-holding-usd"></i></div><div class="tx-info"><span>${tx.description}</span><small>${t('remaining_text')} ${fmt((tx.totalAmount||0)-(tx.paidAmount||0))} / ${t('total_text')} ${fmt(tx.totalAmount||0)}</small></div><div class="tx-right">${!tx.settled ? `<button onclick="openActionModal('${t('settle_debt_title')}','${t('settle_debt_desc')}', {id:${tx.id},type:'tx',action:'payDebt'}, true)" class="action-btn-sm warn">${t('settle_debt')}</button>` : `<small style="color:#ccc;">${t('settled')}</small>`}</div></div>`).join('');
     }
 
     function renderAll() {
@@ -578,43 +678,47 @@
         renderFinancePage();
     }
 
-    // --- Backup & Restore ---
+    // --- Backup & Reset ---
     $('export-btn').addEventListener('click', () => {
-        const dataStr = JSON.stringify(state);
-        const blob = new Blob([dataStr], { type: "application/json" });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url; a.download = "flowfin_backup.json"; a.click();
-        URL.revokeObjectURL(url);
-        showToast('โหลดไฟล์สำรองแล้ว');
+        const dataStr = JSON.stringify(state); const blob = new Blob([dataStr], { type: "application/json" });
+        const url = URL.createObjectURL(blob); const a = document.createElement('a');
+        a.href = url; a.download = "flowfin_backup.json"; a.click(); URL.revokeObjectURL(url);
+        showToast(t('toast_exported'));
     });
 
     $('import-btn').addEventListener('click', () => $('import-file').click());
     $('import-file').addEventListener('change', (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
+        const file = e.target.files[0]; if (!file) return;
         const reader = new FileReader();
         reader.onload = (event) => {
-            try {
-                state = JSON.parse(event.target.result);
-                save(); renderAll();
-                showToast('นำเข้าข้อมูลสำเร็จ!');
-            } catch (err) { showToast('ไฟล์ไม่ถูกต้อง', true); }
-        };
-        reader.readAsText(file);
+            try { 
+                const importedState = JSON.parse(event.target.result);
+                state = importedState; 
+                if (!state.lang) state.lang = 'th'; // Fallback
+                save(); applyTranslations(); renderAll(); showToast(t('toast_imported')); 
+            }
+            catch (err) { showToast(t('toast_invalid_file'), true); }
+        }; reader.readAsText(file);
     });
 
-    // --- Toast (Fixed Timeout) ---
+    $('reset-btn').addEventListener('click', () => {
+        openConfirmModal(t('confirm_reset_title'), t('confirm_reset_desc'), {action: 'reset'}, true);
+    });
+
+    // --- Toast Fixed ---
     function showToast(msg, isError = false) {
-        const t = $('toast');
-        t.innerText = msg;
-        t.style.background = isError ? 'var(--expense-color)' : 'var(--text-main)';
-        t.classList.add('show');
-        if (toastTimer) clearTimeout(toastTimer); // Clear previous timer
-        toastTimer = setTimeout(() => t.classList.remove('show'), 2500);
+        const tEl = $('toast');
+        tEl.innerText = msg;
+        tEl.style.background = isError ? 'var(--expense-color)' : 'var(--text-main)';
+        tEl.classList.add('show');
+        if (toastTimer) clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => tEl.classList.remove('show'), 2000);
     }
 
     function save() { safeSet('ff_state_v2', state); }
+    
+    // Init
+    applyTranslations();
     renderAll();
 </script>
 </body>
