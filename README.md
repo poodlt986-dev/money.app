@@ -15,7 +15,6 @@ FlowFin - แอปจดเงินกระเป๋าตุ้ม (สำ�
 4. ข้อมูลจะถูกเซฟอัตโนมัติ ปิดเว็บแล้วเปิดใหม่ข้อมูลก็ยังอยู่ครบ
 (คำแนะนำ: แอปจะใช้ได้ดีที่สุดถ้าเปิดผ่าน Google Chrome ในมือถือนะครับ)
 
-English Version
 FlowFin - Personal Expense Tracker (For Students)
 A simple web app for tracking personal income and expenses. Built to solve the classic monthly question: "Where did all my money go?" It's designed for speed—no sign-ups or logins required. Just open it and start typing.
 
