@@ -6,187 +6,103 @@
     <title>FlowFin Pro - Personal Finance</title>
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- โหลด Tesseract.js สำหรับสแกนสลิปแบบ Offline -->
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
     <style>
         :root {
-            --bg-color: #f0f2f5;
-            --card-bg: #ffffff;
-            --text-main: #1c1c1e;
-            --text-muted: #8e8e93;
-            --income-color: #34c759;
-            --expense-color: #ff3b30;
-            --warn-color: #ff9500;
-            --border-color: #e5e5ea;
-            --primary: #007aff;
-            --shadow-sm: 0 1px 3px rgba(0,0,0,0.04);
-            --input-bg: #ffffff;
-            --toggle-bg: #f0f2f5;
-            --overlay-bg: rgba(0,0,0,0.6);
-            --notif-bg: #E3F2FD;
-            --notif-text: #0D47A1;
-            --notif-border: rgba(0, 122, 255, 0.2);
-            --notif-icon: #007aff;
+            --bg-color: #f0f2f5; --card-bg: #ffffff; --text-main: #1c1c1e; --text-muted: #8e8e93;
+            --income-color: #34c759; --expense-color: #ff3b30; --warn-color: #ff9500;
+            --border-color: #e5e5ea; --primary: #007aff; --shadow-sm: 0 1px 3px rgba(0,0,0,0.04);
+            --input-bg: #ffffff; --toggle-bg: #f0f2f5; --overlay-bg: rgba(0,0,0,0.6);
+            --notif-bg: #E3F2FD; --notif-text: #0D47A1; --notif-border: rgba(0, 122, 255, 0.2); --notif-icon: #007aff;
         }
-
         [data-theme="dark"] {
-            --bg-color: #121212;
-            --card-bg: #1e1e1e;
-            --text-main: #f1f1f1;
-            --text-muted: #888888;
-            --income-color: #30d158;
-            --expense-color: #ff453a;
-            --warn-color: #ff9f0a;
-            --border-color: #333333;
-            --primary: #0a84ff;
-            --shadow-sm: 0 1px 3px rgba(0,0,0,0.2);
-            --input-bg: #2c2c2c;
-            --toggle-bg: #2c2c2c;
-            --overlay-bg: rgba(0,0,0,0.8);
-            --notif-bg: rgba(10, 132, 255, 0.15);
-            --notif-text: #64D2FF;
-            --notif-border: rgba(10, 132, 255, 0.3);
-            --notif-icon: #64D2FF;
+            --bg-color: #121212; --card-bg: #1e1e1e; --text-main: #f1f1f1; --text-muted: #888888;
+            --income-color: #30d158; --expense-color: #ff453a; --warn-color: #ff9f0a;
+            --border-color: #333333; --primary: #0a84ff; --shadow-sm: 0 1px 3px rgba(0,0,0,0.2);
+            --input-bg: #2c2c2c; --toggle-bg: #2c2c2c; --overlay-bg: rgba(0,0,0,0.8);
+            --notif-bg: rgba(10, 132, 255, 0.15); --notif-text: #64D2FF; --notif-border: rgba(10, 132, 255, 0.3); --notif-icon: #64D2FF;
         }
-
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'IBM Plex Sans Thai', sans-serif; -webkit-tap-highlight-color: transparent; }
-        
         body { background: var(--bg-color); color: var(--text-main); display: flex; justify-content: center; min-height: 100vh; padding-bottom: 100px; transition: background 0.3s, color 0.3s; }
         .app-container { width: 100%; max-width: 420px; background: var(--bg-color); min-height: 100vh; position: relative; padding: 0 1rem 2rem; }
-
-        .header { background: var(--card-bg); margin: 1rem 0; padding: 1.5rem; border-radius: 20px; text-align: center; box-shadow: var(--shadow-sm); position: relative; transition: background 0.3s; }
+        .header { background: var(--card-bg); margin: 1rem 0; padding: 1.5rem; border-radius: 20px; text-align: center; box-shadow: var(--shadow-sm); position: relative; }
         .header-controls { position: absolute; top: 1rem; right: 1rem; display: flex; gap: 0.5rem; }
-        .header-btn { background: var(--toggle-bg); color: var(--text-main); border: none; padding: 0.4rem 0.8rem; border-radius: 20px; font-weight: 600; font-size: 0.75rem; cursor: pointer; transition: background 0.3s; }
+        .header-btn { background: var(--toggle-bg); color: var(--text-main); border: none; padding: 0.4rem 0.8rem; border-radius: 20px; font-weight: 600; font-size: 0.75rem; cursor: pointer; }
         .header h1 { font-size: 0.8rem; font-weight: 500; color: var(--text-muted); }
         .balance { font-size: 2.5rem; font-weight: 700; margin-top: 0.25rem; }
         .balance.negative { color: var(--expense-color); }
         .balance-sub { font-size: 0.75rem; color: var(--text-muted); margin-top: 0.3rem; }
-
         .add-income-btn { position: absolute; top: 50%; right: 1.5rem; transform: translateY(-50%); background: var(--income-color); color: white; border: none; padding: 0.5rem 1rem; border-radius: 20px; font-weight: 600; font-size: 0.8rem; cursor: pointer; display: flex; align-items: center; gap: 0.3rem; box-shadow: 0 2px 8px rgba(52, 199, 89, 0.3); }
-        
         .notif-banner { background: var(--notif-bg); color: var(--notif-text); padding: 0.75rem 1rem; border-radius: 12px; margin-bottom: 1rem; font-size: 0.85rem; display: none; align-items: center; gap: 0.5rem; border: 1px solid var(--notif-border); }
-        .notif-banner.show { display: flex; }
-        .notif-banner i { color: var(--notif-icon); }
-
-        .budget-card { background: var(--card-bg); margin-bottom: 1rem; padding: 1.2rem 1.5rem; border-radius: 16px; box-shadow: var(--shadow-sm); cursor: pointer; display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--border-color); transition: background 0.3s; }
+        .notif-banner.show { display: flex; } .notif-banner i { color: var(--notif-icon); }
+        .budget-card { background: var(--card-bg); margin-bottom: 1rem; padding: 1.2rem 1.5rem; border-radius: 16px; box-shadow: var(--shadow-sm); cursor: pointer; display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--border-color); }
         .budget-info small { color: var(--text-muted); font-size: 0.75rem; display: block; margin-bottom: 0.2rem; }
-        .budget-amount { font-size: 1.4rem; font-weight: 700; color: var(--primary); }
-        .budget-amount.over { color: var(--expense-color); }
+        .budget-amount { font-size: 1.4rem; font-weight: 700; color: var(--primary); } .budget-amount.over { color: var(--expense-color); }
         .budget-sub { font-size: 0.7rem; color: var(--text-muted); }
-
-        .streak-card { background: var(--card-bg); margin-bottom: 1rem; padding: 1rem 1.5rem; border-radius: 16px; box-shadow: var(--shadow-sm); display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--border-color); transition: background 0.3s; }
+        .streak-card { background: var(--card-bg); margin-bottom: 1rem; padding: 1rem 1.5rem; border-radius: 16px; box-shadow: var(--shadow-sm); display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--border-color); }
         .streak-info small { color: var(--text-muted); font-size: 0.75rem; display: block; margin-bottom: 0.2rem; }
         .streak-amount { font-size: 1.2rem; font-weight: 700; color: var(--primary); }
-
-        .chart-container { background: var(--card-bg); margin-bottom: 1rem; padding: 1.2rem; border-radius: 16px; box-shadow: var(--shadow-sm); transition: background 0.3s; }
+        .chart-container { background: var(--card-bg); margin-bottom: 1rem; padding: 1.2rem; border-radius: 16px; box-shadow: var(--shadow-sm); }
         .chart-container h3 { font-size: 0.9rem; margin-bottom: 1rem; color: var(--text-muted); text-align: center; }
         .chart-wrapper { display: flex; align-items: center; gap: 1.5rem; }
-        #pie-chart { width: 120px; height: 120px; }
-        #chart-legend { flex: 1; font-size: 0.8rem; }
-
-        .page { display: none; animation: fadeIn 0.3s; }
-        .page.active { display: block; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
-        .card-box { background: var(--card-bg); padding: 1.2rem; border-radius: 16px; box-shadow: var(--shadow-sm); margin-bottom: 1rem; transition: background 0.3s; position: relative; }
+        #pie-chart { width: 120px; height: 120px; } #chart-legend { flex: 1; font-size: 0.8rem; }
+        .page { display: none; animation: fadeIn 0.3s; } .page.active { display: block; } @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .card-box { background: var(--card-bg); padding: 1.2rem; border-radius: 16px; box-shadow: var(--shadow-sm); margin-bottom: 1rem; position: relative; }
         .card-box-title { font-size: 0.9rem; font-weight: 600; color: var(--text-muted); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; }
-        
         .form-group { display: flex; gap: 0.5rem; margin-bottom: 0.8rem; position: relative; }
-        .input-field { flex: 1; padding: 0.8rem 1rem; border: 1px solid var(--border-color); border-radius: 12px; font-size: 0.95rem; outline: none; width: 100%; background: var(--input-bg); color: var(--text-main); transition: background 0.3s, border 0.3s; }
+        .input-field { flex: 1; padding: 0.8rem 1rem; border: 1px solid var(--border-color); border-radius: 12px; font-size: 0.95rem; outline: none; width: 100%; background: var(--input-bg); color: var(--text-main); }
         .input-field:focus { border-color: var(--primary); }
-        
-        /* ปุ่มสแกนสลิป */
         .scan-slip-btn { position: absolute; right: 0.8rem; top: 50%; transform: translateY(-50%); background: var(--toggle-bg); color: var(--primary); border: none; width: 36px; height: 36px; border-radius: 50%; cursor: pointer; font-size: 0.9rem; display: flex; align-items: center; justify-content: center; z-index: 2; }
-        .scan-slip-btn:active { transform: translateY(-50%) scale(0.95); }
-
         .btn-primary { background: var(--text-main); color: var(--card-bg); border: none; padding: 0.85rem; border-radius: 12px; font-weight: 600; width: 100%; cursor: pointer; font-size: 1rem; }
-        .btn-primary:active { transform: scale(0.98); }
         .btn-secondary { background: var(--toggle-bg); color: var(--text-main); border: none; padding: 0.85rem; border-radius: 12px; font-weight: 600; width: 100%; cursor: pointer; font-size: 0.9rem; margin-top: 0.5rem; }
         .btn-warn { background: rgba(255, 149, 0, 0.1); color: var(--warn-color); border: none; padding: 0.85rem; border-radius: 12px; font-weight: 600; width: 100%; cursor: pointer; font-size: 0.9rem; margin-top: 0.5rem; }
         .btn-danger { background: rgba(255, 59, 48, 0.1); color: var(--expense-color); border: none; padding: 0.85rem; border-radius: 12px; font-weight: 600; width: 100%; cursor: pointer; font-size: 0.9rem; margin-top: 1.5rem; }
-
         .section-title { font-size: 0.85rem; margin: 1.5rem 0 0.75rem; font-weight: 600; color: var(--text-muted); padding-left: 0.5rem; display: flex; justify-content: space-between; align-items: center; }
-        .edit-toggle-btn { background: none; border: none; color: var(--primary); font-size: 0.8rem; font-weight: 600; cursor: pointer; }
-        .edit-toggle-btn.active { background: var(--primary); color: white; padding: 4px 8px; border-radius: 6px; }
-        
+        .edit-toggle-btn { background: none; border: none; color: var(--primary); font-size: 0.8rem; font-weight: 600; cursor: pointer; } .edit-toggle-btn.active { background: var(--primary); color: white; padding: 4px 8px; border-radius: 6px; }
         .round-up-toggle { display: flex; align-items: center; gap: 0.5rem; margin: 0.5rem 0 1rem; font-size: 0.85rem; color: var(--text-muted); cursor: pointer; }
-
-        .accordion { background: var(--card-bg); border-radius: 16px; box-shadow: var(--shadow-sm); margin-bottom: 1rem; overflow: hidden; transition: background 0.3s; }
+        .accordion { background: var(--card-bg); border-radius: 16px; box-shadow: var(--shadow-sm); margin-bottom: 1rem; overflow: hidden; }
         .accordion-header { padding: 1.1rem 1.2rem; font-weight: 600; font-size: 1rem; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
         .accordion-header i { color: var(--text-muted); transition: transform 0.2s; font-size: 0.8rem; }
         .accordion.open .accordion-header i { transform: rotate(180deg); }
-        .accordion-body { padding: 0 1rem 1rem; display: none; }
-        .accordion.open .accordion-body { display: block; }
-
-        .tx-item { background: var(--card-bg); display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.2rem; border-radius: 14px; margin-bottom: 0.5rem; box-shadow: var(--shadow-sm); position: relative; transition: background 0.3s; }
+        .accordion-body { padding: 0 1rem 1rem; display: none; } .accordion.open .accordion-body { display: block; }
+        .tx-item { background: var(--card-bg); display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.2rem; border-radius: 14px; margin-bottom: 0.5rem; box-shadow: var(--shadow-sm); position: relative; }
         .tx-icon { width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; margin-right: 0.8rem; flex-shrink: 0; font-size: 1.1rem; }
-        .tx-icon.income { background: rgba(52, 199, 89, 0.1); color: var(--income-color); }
-        .tx-icon.expense { background: rgba(255, 59, 48, 0.1); color: var(--expense-color); }
-        .tx-icon.debt { background: rgba(255, 149, 0, 0.1); color: var(--warn-color); }
-        .tx-icon.inst { background: rgba(0, 122, 255, 0.1); color: var(--primary); }
-        .tx-icon.bill { background: rgba(88, 86, 214, 0.1); color: #5856d6; }
-        .tx-icon.savings { background: rgba(52, 199, 89, 0.1); color: var(--income-color); }
-        
-        .tx-info { flex: 1; min-width: 0; }
-        .tx-info span { display: block; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .tx-icon.income { background: rgba(52, 199, 89, 0.1); color: var(--income-color); } .tx-icon.expense { background: rgba(255, 59, 48, 0.1); color: var(--expense-color); }
+        .tx-icon.debt { background: rgba(255, 149, 0, 0.1); color: var(--warn-color); } .tx-icon.inst { background: rgba(0, 122, 255, 0.1); color: var(--primary); }
+        .tx-icon.bill { background: rgba(88, 86, 214, 0.1); color: #5856d6; } .tx-icon.savings { background: rgba(52, 199, 89, 0.1); color: var(--income-color); }
+        .tx-info { flex: 1; min-width: 0; } .tx-info span { display: block; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .tx-info small { color: var(--text-muted); font-size: 0.75rem; }
         .tx-right { text-align: right; display: flex; flex-direction: column; align-items: flex-end; }
-        .tx-amount { font-weight: 600; font-size: 1rem; }
-        .tx-amount.income { color: var(--income-color); }
-        .tx-amount.expense { color: var(--expense-color); }
-        .tx-amount.debt { color: var(--warn-color); }
-        .tx-amount.settled { color: #c7c7cc; text-decoration: line-through; }
-        
+        .tx-amount { font-weight: 600; font-size: 1rem; } .tx-amount.income { color: var(--income-color); } .tx-amount.expense { color: var(--expense-color); }
+        .tx-amount.debt { color: var(--warn-color); } .tx-amount.settled { color: #c7c7cc; text-decoration: line-through; }
         .delete-btn { position: absolute; right: -6px; top: -6px; background: var(--expense-color); color: white; border: 2px solid var(--bg-color); border-radius: 50%; width: 24px; height: 24px; font-size: 0.7rem; display: none; align-items: center; justify-content: center; cursor: pointer; z-index: 10; }
         body.edit-mode .delete-btn { display: flex; }
-
         .split-toggle { display: flex; align-items: center; gap: 0.5rem; margin: 0.5rem 0 1rem; font-size: 0.85rem; color: var(--text-muted); cursor: pointer; }
-        .split-content { display: none; background: var(--toggle-bg); padding: 0.8rem; border-radius: 12px; margin-bottom: 1rem; }
-        .split-content.active { display: block; }
-
-        .bottom-nav { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 420px; background: var(--card-bg); display: flex; justify-content: space-around; padding: 0.6rem 0; border-top: 1px solid var(--border-color); z-index: 100; box-shadow: 0 -2px 10px rgba(0,0,0,0.03); transition: background 0.3s; }
+        .split-content { display: none; background: var(--toggle-bg); padding: 0.8rem; border-radius: 12px; margin-bottom: 1rem; } .split-content.active { display: block; }
+        .bottom-nav { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 420px; background: var(--card-bg); display: flex; justify-content: space-around; padding: 0.6rem 0; border-top: 1px solid var(--border-color); z-index: 100; box-shadow: 0 -2px 10px rgba(0,0,0,0.03); }
         .nav-btn { background: none; border: none; display: flex; flex-direction: column; align-items: center; gap: 2px; color: var(--text-muted); cursor: pointer; padding: 0.5rem; font-size: 0.65rem; font-weight: 500; position: relative; }
-        .nav-btn.active { color: var(--primary); }
-        .nav-btn i { font-size: 1.2rem; }
-        
+        .nav-btn.active { color: var(--primary); } .nav-btn i { font-size: 1.2rem; }
         .fab { position: fixed; bottom: 90px; right: 20px; height: 48px; padding: 0 20px; background: var(--expense-color); color: white; border: none; border-radius: 24px; box-shadow: 0 4px 12px rgba(255, 59, 48, 0.4); cursor: pointer; font-size: 0.9rem; font-weight: 600; z-index: 100; display: flex; align-items: center; gap: 8px; }
-        .fab:active { transform: scale(0.95); }
-
         .badge-dot { position: absolute; top: 2px; right: calc(50% - 18px); width: 10px; height: 10px; background: var(--expense-color); border-radius: 50%; display: none; border: 1.5px solid var(--card-bg); }
-        .badge-dot.show { display: block; animation: blinkRed 1s infinite; }
-        @keyframes blinkRed { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.2; transform: scale(1.3); } }
-
+        .badge-dot.show { display: block; animation: blinkRed 1s infinite; } @keyframes blinkRed { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.2; transform: scale(1.3); } }
         .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: var(--overlay-bg); display: none; justify-content: center; align-items: flex-end; z-index: 2000; padding: 1rem; }
         .modal-overlay.show { display: flex; }
-        .modal-box { background: var(--card-bg); padding: 1.5rem; border-radius: 20px 20px 0 0; max-width: 420px; width: 100%; text-align: center; animation: slideUp 0.3s ease-out; transition: background 0.3s; }
+        .modal-box { background: var(--card-bg); padding: 1.5rem; border-radius: 20px 20px 0 0; max-width: 420px; width: 100%; text-align: center; animation: slideUp 0.3s ease-out; }
         @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
-        .modal-box h3 { margin-bottom: 1rem; font-size: 1.2rem; }
-        .modal-box p { color: var(--text-muted); margin-bottom: 1rem; font-size: 0.9rem; }
-        .modal-actions { display: flex; gap: 0.5rem; margin-top: 1rem; }
-        .modal-actions button { flex: 1; padding: 0.8rem; border-radius: 12px; border: none; font-weight: 600; cursor: pointer; font-size: 0.95rem; }
-        .btn-cancel { background: var(--toggle-bg); color: var(--text-main); }
-        .btn-confirm { background: var(--primary); color: white; }
-        .btn-confirm.danger { background: var(--expense-color); }
-        .btn-confirm.income { background: var(--income-color); }
-
+        .modal-box h3 { margin-bottom: 1rem; font-size: 1.2rem; } .modal-box p { color: var(--text-muted); margin-bottom: 1rem; font-size: 0.9rem; }
+        .modal-actions { display: flex; gap: 0.5rem; margin-top: 1rem; } .modal-actions button { flex: 1; padding: 0.8rem; border-radius: 12px; border: none; font-weight: 600; cursor: pointer; font-size: 0.95rem; }
+        .btn-cancel { background: var(--toggle-bg); color: var(--text-main); } .btn-confirm { background: var(--primary); color: white; }
+        .btn-confirm.danger { background: var(--expense-color); } .btn-confirm.income { background: var(--income-color); }
         .toast { position: fixed; bottom: -150px; left: 50%; transform: translateX(-50%); color: white; padding: 0.75rem 1.5rem; border-radius: 100px; font-size: 0.85rem; box-shadow: 0 4px 12px rgba(0,0,0,0.15); transition: bottom 0.3s ease-out; z-index: 3000; max-width: 90%; text-align: center; pointer-events: none; opacity: 0; }
         .toast.show { bottom: 100px; opacity: 1; }
-        
-        .empty-state { text-align: center; padding: 2rem 1rem; color: var(--text-muted); }
-        .empty-state i { font-size: 2rem; margin-bottom: 1rem; opacity: 0.15; }
-        
+        .empty-state { text-align: center; padding: 2rem 1rem; color: var(--text-muted); } .empty-state i { font-size: 2rem; margin-bottom: 1rem; opacity: 0.15; }
         .progress-bar { height: 6px; background: var(--toggle-bg); border-radius: 3px; margin-top: 8px; overflow: hidden; width: 100%; }
         .progress-fill { height: 100%; background: var(--primary); border-radius: 3px; transition: width 0.3s; }
         .action-btn-sm { background: rgba(0, 122, 255, 0.1); border: none; color: var(--primary); padding: 4px 10px; border-radius: 8px; font-size: 0.75rem; cursor: pointer; margin-top: 6px; font-weight: 500; }
         .action-btn-sm.warn { background: rgba(255, 149, 0, 0.1); color: var(--warn-color); }
-
         .watermark { text-align: center; padding: 2rem 0 1rem; color: #c7c7cc; font-size: 0.75rem; font-weight: 500; letter-spacing: 1px; }
-        
-        .visitor-count-box { text-align: center; font-size: 0.8rem; color: var(--text-muted); margin-top: 1rem; }
-        .visitor-count-box span { color: var(--primary); font-weight: 700; }
-
-        .star-rating { display: flex; justify-content: center; gap: 0.5rem; font-size: 2rem; margin-bottom: 1rem; color: #ddd; }
-        .star-rating .star.active { color: #ffcc00; }
+        .visitor-count-box { text-align: center; font-size: 0.8rem; color: var(--text-muted); margin-top: 1rem; } .visitor-count-box span { color: var(--primary); font-weight: 700; }
+        .star-rating { display: flex; justify-content: center; gap: 0.5rem; font-size: 2rem; margin-bottom: 1rem; color: #ddd; } .star-rating .star.active { color: #ffcc00; }
     </style>
 </head>
 <body>
@@ -270,17 +186,14 @@
     <div class="page" id="page-history">
         <div class="section-title">
             <span data-i18n="all_history">ประวัติทั้งหมด</span>
-            <button class="edit-toggle-btn" onclick="toggleEditMode()"><i class="fas fa-edit"></i> <span data-i18n="edit_delete">แก้ไข/ลบ</span></button>
+            <button class="edit-toggle-btn" id="edit-toggle-btn"><i class="fas fa-edit"></i> <span data-i18n="edit_delete">แก้ไข/ลบ</span></button>
         </div>
         <div id="full-history-list"></div>
     </div>
 
     <div class="page" id="page-finance">
         <div class="accordion open" id="acc-bills">
-            <div class="accordion-header" onclick="toggleAccordion('acc-bills')">
-                <span>📅 <span data-i18n="monthly_bills">บิลประจำเดือน</span></span>
-                <i class="fas fa-chevron-down"></i>
-            </div>
+            <div class="accordion-header"><span>📅 <span data-i18n="monthly_bills">บิลประจำเดือน</span></span><i class="fas fa-chevron-down"></i></div>
             <div class="accordion-body">
                 <div class="form-group">
                     <input type="text" id="bill-name" class="input-field" data-i18n-ph="bill_name_ph" placeholder="ชื่อบิล (เช่น ค่าหอ)">
@@ -295,10 +208,7 @@
         </div>
 
         <div class="accordion" id="acc-inst">
-            <div class="accordion-header" onclick="toggleAccordion('acc-inst')">
-                <span>📱 <span data-i18n="installments">สินค้าผ่อนชำระ</span></span>
-                <i class="fas fa-chevron-down"></i>
-            </div>
+            <div class="accordion-header"><span>📱 <span data-i18n="installments">สินค้าผ่อนชำระ</span></span><i class="fas fa-chevron-down"></i></div>
             <div class="accordion-body">
                 <div class="form-group">
                     <input type="text" id="inst-name" class="input-field" data-i18n-ph="item_name_ph" placeholder="ชื่อสินค้า (เช่น iPhone)">
@@ -314,10 +224,7 @@
         </div>
 
         <div class="accordion" id="acc-sav">
-            <div class="accordion-header" onclick="toggleAccordion('acc-sav')">
-                <span>🐷 <span data-i18n="savings_goal">เป้าหมายออม (ซ่อนเงิน)</span></span>
-                <i class="fas fa-chevron-down"></i>
-            </div>
+            <div class="accordion-header"><span>🐷 <span data-i18n="savings_goal">เป้าหมายออม (ซ่อนเงิน)</span></span><i class="fas fa-chevron-down"></i></div>
             <div class="accordion-body">
                 <div class="form-group">
                     <input type="text" id="sav-name" class="input-field" data-i18n-ph="goal_name_ph" placeholder="เป้าหมาย (เช่น ซื้อ iPad)">
@@ -329,20 +236,14 @@
         </div>
 
         <div class="accordion" id="acc-debt">
-            <div class="accordion-header" onclick="toggleAccordion('acc-debt')">
-                <span>🤝 <span data-i18n="debts">หนี้ค้างจ่าย</span></span>
-                <i class="fas fa-chevron-down"></i>
-            </div>
+            <div class="accordion-header"><span>🤝 <span data-i18n="debts">หนี้ค้างจ่าย</span></span><i class="fas fa-chevron-down"></i></div>
             <div class="accordion-body">
                 <div id="debt-list"></div>
             </div>
         </div>
 
         <div class="accordion" id="acc-set">
-            <div class="accordion-header" onclick="toggleAccordion('acc-set')">
-                <span>💾 <span data-i18n="backup_settings">สำรองข้อมูล & ตั้งค่า</span></span>
-                <i class="fas fa-chevron-down"></i>
-            </div>
+            <div class="accordion-header"><span>💾 <span data-i18n="backup_settings">สำรองข้อมูล & ตั้งค่า</span></span><i class="fas fa-chevron-down"></i></div>
             <div class="accordion-body">
                 <button type="button" class="btn-secondary" id="export-csv-btn"><i class="fas fa-file-csv"></i> <span data-i18n="export_csv">โหลดไฟล์ CSV (Excel)</span></button>
                 <button type="button" class="btn-secondary" id="export-btn"><i class="fas fa-download"></i> <span data-i18n="export_data">โหลดไฟล์สำรองข้อมูล</span></button>
@@ -354,7 +255,7 @@
                 <button type="button" class="btn-secondary" id="feedback-btn" style="margin-top:1rem; background: rgba(0, 122, 255, 0.1); color: var(--primary);"><i class="fas fa-comment-dots"></i> <span data-i18n="feedback">ส่ง Feedback / ให้คะแนนแอป</span></button>
                 
                 <div class="visitor-count-box" id="visitor-box">
-                    <i class="fas fa-users"></i> <span data-i18n="total_users">ผู้ใช้งานรวม</span>: <span id="visitor-count">-</span> <span data-i18n="users_word">คน</span>
+                    <i class="fas fa-users"></i> <span data-i18n="total_users">ผู้ใช้งานวันนี้</span>: <span id="visitor-count">-</span> <span data-i18n="users_word">คน</span>
                 </div>
             </div>
         </div>
@@ -393,11 +294,7 @@
     <div class="modal-box">
         <h3 data-i18n="feedback_title">ให้คะแนน & ความคิดเห็น</h3>
         <div class="star-rating" id="star-rating">
-            <i class="far fa-star star" data-rating="1"></i>
-            <i class="far fa-star star" data-rating="2"></i>
-            <i class="far fa-star star" data-rating="3"></i>
-            <i class="far fa-star star" data-rating="4"></i>
-            <i class="far fa-star star" data-rating="5"></i>
+            <i class="far fa-star star" data-rating="1"></i><i class="far fa-star star" data-rating="2"></i><i class="far fa-star star" data-rating="3"></i><i class="far fa-star star" data-rating="4"></i><i class="far fa-star star" data-rating="5"></i>
         </div>
         <div class="form-group">
             <textarea id="feedback-text" class="input-field" rows="3" data-i18n-ph="feedback_ph" placeholder="เขียนความคิดเห็นหรือบัคที่เจอมาได้ที่นี่..." style="resize:none; height: 80px;"></textarea>
@@ -452,6 +349,7 @@
 <div class="toast" id="toast"></div>
 
 <script>
+document.addEventListener('DOMContentLoaded', function() {
     const translations = {
         th: {
             balance: "ยอดเงินคงเหลือ", hidden_money: "เงินซ่อนไว้", expense_chart: "แผนภูมิค่าใช้จ่าย",
@@ -466,8 +364,8 @@
             monthly_bills: "บิลประจำเดือน", bill_name_ph: "ชื่อบิล (เช่น ค่าหอ)", due_day_ph: "ครบกำหนดวันที่ (1-31)", add_bill: "เพิ่มบิล",
             installments: "สินค้าผ่อนชำระ", item_name_ph: "ชื่อสินค้า (เช่น iPhone)", monthly_ph: "ค่างวด/เดือน", total_months_ph: "จำนวนงวด", add_inst: "เพิ่มรายการผ่อน",
             savings_goal: "เป้าหมายออม (ซ่อนเงิน)", goal_name_ph: "เป้าหมาย (เช่น ซื้อ iPad)", amount_to_hide_ph: "เอาไปซ่อนกี่บาท", hide_money: "เอาเงินไปซ่อน",
-            debts: "หนี้ค้างจ่าย", backup_settings: "สำรองข้อมูล & ตั้งค่า", export_csv: "โหลดไฟล์ CSV (Excel)", export_data: "โหลดไฟล์สำรองข้อมูล", import_data: "นำเข้าไฟล์สำรองข้อมูล", reset_budget: "รีเซ็ตงบประมาณรายวัน", reset_all: "รีเซ็ตข้อมูลทั้งหมด",
-            confirm: "ยืนยัน", cancel: "ยกเลิก", action: "ทำรายการ", feedback: "ส่ง Feedback / ให้คะแนนแอป", total_users: "ผู้ใช้งานรวม", users_word: "คน",
+            debts: "หนี้ค้างจ่าย", settled_debts: "ประวัติหนี้ที่เคลียร์แล้ว", backup_settings: "สำรองข้อมูล & ตั้งค่า", export_csv: "โหลดไฟล์ CSV (Excel)", export_data: "โหลดไฟล์สำรองข้อมูล", import_data: "นำเข้าไฟล์สำรองข้อมูล", reset_budget: "รีเซ็ตงบประมาณรายวัน", reset_all: "รีเซ็ตข้อมูลทั้งหมด",
+            confirm: "ยืนยัน", cancel: "ยกเลิก", action: "ทำรายการ", feedback: "ส่ง Feedback / ให้คะแนนแอป", total_users: "ผู้ใช้งานวันนี้", users_word: "คน",
             feedback_title: "ให้คะแนน & ความคิดเห็น", feedback_ph: "เขียนความคิดเห็นหรือบัคที่เจอมาได้ที่นี่...", feedback_success: "ขอบคุณสำหรับ Feedback ครับ!",
             general_income: "รายรับทั่วไป", general_expense: "รายจ่ายทั่วไป", panic_buy: "ซื้อของฉุกเฉิน", panic_short: "ซื้อได้ไหม?",
             friend_returned: "เพื่อนคืนเงิน", i_returned: "ฉันคืนเงินเพื่อน",
@@ -476,7 +374,7 @@
             settled: "เคลียร์แล้ว", paid: "จ่ายแล้ว", due_on: "ครบกำหนดวันที่", of_every_month: "ของทุกเดือน", monthly: "ผ่อนเดือนละ", installments_short: "งวด", money_hidden_here: "เก็บเงินส่วนนี้ไว้",
             remaining_text: "เหลือ", total_text: "รวม", round_up_sav_name: "เงินออมปัดเศษ", toast_paid: "จ่ายไป", toast_received: "รับเงิน",
             today_word: "วันนี้", overdue_word: "เกินกำหนด", no_chart_data: "ยังไม่มีข้อมูลค่าใช้จ่าย",
-            no_tx: "ยังไม่มีรายการ", no_bills: "ไม่มีบิลประจำเดือน", no_inst: "ไม่มีสินค้าผ่อน", no_savings: "ยังไม่ได้ซ่อนเงินไว้", no_debts: "ไม่มีหนี้ค้างจ่าย",
+            no_tx: "ยังไม่มีรายการ", no_bills: "ไม่มีบิลประจำเดือน", no_inst: "ไม่มีสินค้าผ่อน", no_savings: "ยังไม่ได้ซ่อนเงินไว้", no_debts: "ไม่มีหนี้ค้างจ่าย", no_settled_debts: "ยังไม่มีประวัติหนี้ที่เคลียร์",
             toast_saved: "บันทึกสำเร็จ!", toast_amount_req: "ใส่จำนวนเงินหน่อยนะ!", toast_budget_saved: "บันทึกงบประมาณแล้ว", toast_budget_reset: "รีเซ็ตงบประมาณเรียบร้อยแล้ว", toast_need_income: "ต้องมีรายรับก่อน ถึงจะตั้งงบประมาณได้นะ!",
             prompt_budget: "ตั้งงบประมาณใช้จ่ายสูงสุดต่อวัน (บาท):", toast_budget_gt0: "งบประมาณต้องมากกว่า 0", toast_round_up: "ปัดเศษเก็บออมให้แล้ว:",
             toast_bill_added: "เพิ่มบิลสำเร็จ!", toast_invalid_bill: "กรอกข้อมูลบิลให้ถูกต้อง", toast_inst_added: "เพิ่มรายการผ่อนสำเร็จ!", toast_invalid_inst: "กรอกข้อมูลผ่อนสินค้าให้ครบ", toast_sav_added: "ซ่อนเงินเรียบร้อย!", toast_invalid_sav: "กรอกข้อมูลการออมให้ถูกต้อง",
@@ -501,8 +399,8 @@
             monthly_bills: "Monthly Bills", bill_name_ph: "Bill name (e.g., Rent)", due_day_ph: "Due day (1-31)", add_bill: "Add Bill",
             installments: "Installments", item_name_ph: "Item name (e.g., iPhone)", monthly_ph: "Monthly payment", total_months_ph: "Total months", add_inst: "Add Installment",
             savings_goal: "Savings Goal (Hide money)", goal_name_ph: "Goal (e.g., Buy iPad)", amount_to_hide_ph: "Amount to hide", hide_money: "Hide Money",
-            debts: "Debts", backup_settings: "Backup & Settings", export_csv: "Export CSV (Excel)", export_data: "Export Data", import_data: "Import Data", reset_budget: "Reset Daily Budget", reset_all: "Reset All Data",
-            confirm: "Confirm", cancel: "Cancel", action: "Action", feedback: "Send Feedback / Rate App", total_users: "Total Users", users_word: "users",
+            debts: "Debts", settled_debts: "Settled Debts History", backup_settings: "Backup & Settings", export_csv: "Export CSV (Excel)", export_data: "Export Data", import_data: "Import Data", reset_budget: "Reset Daily Budget", reset_all: "Reset All Data",
+            confirm: "Confirm", cancel: "Cancel", action: "Action", feedback: "Send Feedback / Rate App", total_users: "Users Today", users_word: "users",
             feedback_title: "Rate & Review", feedback_ph: "Write your feedback or bugs here...", feedback_success: "Thank you for your feedback!",
             general_income: "General Income", general_expense: "General Expense", panic_buy: "Emergency Purchase", panic_short: "Can I buy?",
             friend_returned: "Friend returned money", i_returned: "I returned money",
@@ -510,8 +408,8 @@
             pay_bill: "Pay Bill", pay_inst: "Pay This Month", withdraw: "Withdraw", settle_debt: "Settle Debt",
             settled: "Settled", paid: "Paid", due_on: "Due on", of_every_month: "of every month", monthly: "Monthly", installments_short: "months", money_hidden_here: "Money hidden here",
             remaining_text: "Remaining", total_text: "Total", round_up_sav_name: "Round-up Savings", toast_paid: "Paid", toast_received: "Received",
-            today_word: "Today", days_word: "days", overdue_word: "Overdue", no_chart_data: "No expense data yet",
-            no_tx: "No transactions yet", no_bills: "No monthly bills", no_inst: "No installments", no_savings: "No hidden savings", no_debts: "No debts",
+            today_word: "Today", overdue_word: "Overdue", no_chart_data: "No expense data yet",
+            no_tx: "No transactions yet", no_bills: "No monthly bills", no_inst: "No installments", no_savings: "No hidden savings", no_debts: "No debts", no_settled_debts: "No settled debts history",
             toast_saved: "Saved successfully!", toast_amount_req: "Please enter an amount!", toast_budget_saved: "Budget saved", toast_budget_reset: "Daily budget reset successfully", toast_need_income: "You need income before setting a budget!",
             prompt_budget: "Set maximum daily budget (THB):", toast_budget_gt0: "Budget must be greater than 0", toast_round_up: "Round-up saved:",
             toast_bill_added: "Bill added!", toast_invalid_bill: "Please enter valid bill data", toast_inst_added: "Installment added!", toast_invalid_inst: "Please enter valid installment data", toast_sav_added: "Money hidden!", toast_invalid_sav: "Please enter valid savings data",
@@ -538,174 +436,151 @@
     function safeGet(key, fallback) { try { const d = localStorage.getItem(key); return d ? JSON.parse(d) : fallback; } catch (e) { return fallback; } }
     function safeSet(key, data) { try { localStorage.setItem(key, JSON.stringify(data)); } catch (e) {} }
 
-    let state = safeGet('ff_state_v2', { transactions: [], installments: [], bills: [], savings: [], dailyBudget: 0, lang: 'th', theme: 'light', createdAt: Date.now() });
-    if (!state.lang) state.lang = 'th'; 
-    if (!state.theme) state.theme = 'light';
-    if (!state.createdAt) state.createdAt = Date.now();
+    const defaultState = { transactions: [], installments: [], bills: [], savings: [], dailyBudget: 0, lang: 'th', theme: 'light', createdAt: Date.now() };
+    let state = safeGet('ff_state_v2', defaultState);
+    
+    if (!state || typeof state !== 'object' || Array.isArray(state)) {
+        state = JSON.parse(JSON.stringify(defaultState));
+    }
+    for (let key in defaultState) {
+        if (state[key] === undefined || state[key] === null) {
+            state[key] = defaultState[key];
+        }
+    }
+    if (!Array.isArray(state.transactions)) state.transactions = [];
+    if (!Array.isArray(state.installments)) state.installments = [];
+    if (!Array.isArray(state.bills)) state.bills = [];
+    if (!Array.isArray(state.savings)) state.savings = [];
+
     let actionTarget = null;
     let toastTimer = null;
     let currentRating = 0;
     const $ = id => document.getElementById(id);
-    const t = key => translations[state.lang][key] || key;
+    const t = key => (translations[state.lang] && translations[state.lang][key]) || key;
+
+    function bindEvent(id, event, handler) {
+        const el = $(id);
+        if (el) {
+            el.addEventListener(event, handler);
+        }
+    }
 
     function applyTheme() {
-        document.documentElement.setAttribute('data-theme', state.theme);
-        $('theme-btn').innerHTML = state.theme === 'dark' ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
+        document.documentElement.setAttribute('data-theme', state.theme || 'light');
+        const themeBtn = $('theme-btn');
+        if (themeBtn) themeBtn.innerHTML = state.theme === 'dark' ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
     }
 
     function applyTranslations() {
         document.querySelectorAll('[data-i18n]').forEach(el => {
             const key = el.getAttribute('data-i18n');
-            if (el.tagName === 'OPTION') { el.innerText = t(key); }
-            else { el.innerText = t(key); }
+            if (el.tagName === 'OPTION') { el.innerText = t(key); } else { el.innerText = t(key); }
         });
         document.querySelectorAll('[data-i18n-ph]').forEach(el => {
             el.placeholder = t(el.getAttribute('data-i18n-ph'));
         });
-        $('lang-btn').innerText = state.lang === 'th' ? 'EN' : 'TH';
+        const langBtn = $('lang-btn');
+        if (langBtn) langBtn.innerText = state.lang === 'th' ? 'EN' : 'TH';
     }
 
-    // --- แก้ไขระบบนับผู้ใช้งานรวม ---
     function updateVisitorCount() {
-        const visitedKey = 'ff_visited_flag';
-        let hasVisited = safeGet(visitedKey, false);
+        const today = new Date().toISOString().split('T')[0]; 
+        const visitedKey = `ff_visited_${today}`;
+        let hasVisitedToday = safeGet(visitedKey, false);
         
-        // ถ้าเคยเข้ามาแล้ว ให้ดึงยอดไปแสดงผลอย่างเดียว (ไม่เพิ่ม)
-        // ถ้าเข้ามาครั้งแรก ให้เพิ่มยอด แล้วบันทึกว่าเคยเข้าแล้ว
-        const url = hasVisited 
-            ? 'https://abacus.jasoncameron.dev/get/flowfin-pro-phudit/visits' 
-            : 'https://abacus.jasoncameron.dev/hit/flowfin-pro-phudit/visits';
+        const url = hasVisitedToday 
+            ? `https://abacus.jasoncameron.dev/get/flowfin-pro-phudit/visits_${today}` 
+            : `https://abacus.jasoncameron.dev/hit/flowfin-pro-phudit/visits_${today}`;
             
         fetch(url)
             .then(res => res.json())
             .then(data => {
                 if (data && data.value) {
-                    $('visitor-count').innerText = data.value.toLocaleString();
-                    if (!hasVisited) {
-                        safeSet(visitedKey, true); // บันทึกว่านับแล้ว ไม่ต้องนับซ้ำ
+                    const vc = $('visitor-count');
+                    if (vc) vc.innerText = data.value.toLocaleString();
+                    if (!hasVisitedToday) {
+                        safeSet(visitedKey, true);
+                        for (let i = 0; i < localStorage.length; i++) {
+                            const key = localStorage.key(i);
+                            if (key.startsWith('ff_visited_') && key !== visitedKey) {
+                                localStorage.removeItem(key);
+                                i--; 
+                            }
+                        }
                     }
                 }
-            }).catch(() => {
-                $('visitor-count').innerText = "N/A";
+            }).catch(() => { 
+                const vc = $('visitor-count');
+                if (vc) vc.innerText = "N/A"; 
             });
     }
 
-    const FEEDBACK_EMAIL = "poodlt986.gmail.com"; 
+    const FEEDBACK_EMAIL = "phudit.dev@email.com"; // ⚠️ เปลี่ยนเป็นอีเมลคุณ
 
-    $('feedback-btn').addEventListener('click', () => {
+    bindEvent('feedback-btn', 'click', () => {
         currentRating = 0;
         $('feedback-text').value = '';
-        document.querySelectorAll('.star-rating .star').forEach(s => {
-            s.classList.remove('active', 'fas'); s.classList.add('far');
-        });
+        document.querySelectorAll('.star-rating .star').forEach(s => { s.classList.remove('active', 'fas'); s.classList.add('far'); });
         $('feedback-modal').classList.add('show');
     });
-
-    $('cancel-feedback').addEventListener('click', () => $('feedback-modal').classList.remove('show'));
-
+    bindEvent('cancel-feedback', 'click', () => $('feedback-modal').classList.remove('show'));
     document.querySelectorAll('.star-rating .star').forEach(star => {
         star.addEventListener('click', () => {
             currentRating = parseInt(star.dataset.rating);
             document.querySelectorAll('.star-rating .star').forEach(s => {
-                if (parseInt(s.dataset.rating) <= currentRating) {
-                    s.classList.add('active', 'fas'); s.classList.remove('far');
-                } else {
-                    s.classList.remove('active', 'fas'); s.classList.add('far');
-                }
+                if (parseInt(s.dataset.rating) <= currentRating) { s.classList.add('active', 'fas'); s.classList.remove('far'); }
+                else { s.classList.remove('active', 'fas'); s.classList.add('far'); }
             });
         });
     });
-
-    $('submit-feedback').addEventListener('click', () => {
+    bindEvent('submit-feedback', 'click', () => {
         const text = $('feedback-text').value.trim();
         if (currentRating === 0) return showToast('กรุณาให้คะแนนดาวด้วยนะ!', 'error');
-        
         fetch(`https://formsubmit.co/ajax/${FEEDBACK_EMAIL}`, {
             method: "POST",
             headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-            body: JSON.stringify({
-                _subject: "มี Feedback ใหม่จากแอป FlowFin!",
-                Rating: `${currentRating} ดาว`,
-                Feedback: text || '-'
-            })
+            body: JSON.stringify({ _subject: "มี Feedback ใหม่จากแอป FlowFin!", Rating: `${currentRating} ดาว`, Feedback: text || '-' })
         }).then(response => {
-            if (response.ok) {
-                showToast(t('feedback_success'), 'success');
-                $('feedback-modal').classList.remove('show');
-            } else {
-                showToast('ส่งไม่สำเร็จ ลองใหม่อีกครั้ง', 'error');
-            }
-        }).catch(() => {
-            showToast('เกิดข้อผิดพลาดทางเน็ตเวิร์ค', 'error');
-        });
+            if (response.ok) { showToast(t('feedback_success'), 'success'); $('feedback-modal').classList.remove('show'); }
+            else { showToast('ส่งไม่สำเร็จ ลองใหม่อีกครั้ง', 'error'); }
+        }).catch(() => { showToast('เกิดข้อผิดพลาดทางเน็ตเวิร์ค', 'error'); });
     });
 
-    // --- OCR Slip Logic (สำหรับรายจ่าย) ---
-    $('scan-slip-btn').addEventListener('click', () => $('slip-input').click());
-    $('slip-input').addEventListener('change', (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-        
-        // แจ้งเตือนสีส้ม (warn) ตอนกำลังอ่านสลิป
-        showToast(t('toast_scanning'), 'warn');
-        
-        Tesseract.recognize(file, 'tha+eng', { logger: m => console.log(m) }).then(({ data: { text } }) => {
-            const match = text.match(/(\d{1,3}(?:,\d{3})*\.\d{2})|(\d+\.\d{2})/);
-            if (match && match[0]) {
-                let amountStr = match[0].replace(/,/g, '');
-                $('amount').value = amountStr;
-                showToast(t('toast_scan_success'), 'expense'); // สำเร็จแล้วเด้งเป็นสีแดง (เพราะเป็นรายจ่าย)
-            } else {
-                showToast(t('toast_scan_fail'), 'error');
-            }
-        }).catch(err => {
-            console.error(err);
-            showToast(t('toast_scan_error'), 'error');
-        }).finally(() => {
-            $('slip-input').value = ''; 
+    function handleSlipScan(inputId, targetInputId, type) {
+        bindEvent(inputId, 'change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            showToast(t('toast_scanning'), 'warn');
+            if (typeof Tesseract === 'undefined') return showToast('ระบบสแกนยังไม่พร้อม', 'error');
+            Tesseract.recognize(file, 'tha+eng', { logger: m => console.log(m) }).then(({ data: { text } }) => {
+                const match = text.match(/(\d{1,3}(?:,\d{3})*\.\d{2})|(\d+\.\d{2})/);
+                if (match && match[0]) {
+                    let amountStr = match[0].replace(/,/g, '');
+                    $(targetInputId).value = amountStr;
+                    showToast(t('toast_scan_success'), type);
+                } else {
+                    showToast(t('toast_scan_fail'), 'error');
+                }
+            }).catch(err => {
+                console.error(err);
+                showToast(t('toast_scan_error'), 'error');
+            }).finally(() => { $(inputId).value = ''; });
         });
-    });
+    }
+    bindEvent('scan-slip-btn', 'click', () => $('slip-input').click());
+    handleSlipScan('slip-input', 'amount', 'expense');
+    bindEvent('scan-slip-btn-income', 'click', () => $('slip-input-income').click());
+    handleSlipScan('slip-input-income', 'income-amt', 'success');
 
-    // --- OCR Slip Logic (สำหรับรายรับ) ---
-    $('scan-slip-btn-income').addEventListener('click', () => $('slip-input-income').click());
-    $('slip-input-income').addEventListener('change', (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-        
-        // แจ้งเตือนสีส้ม (warn) ตอนกำลังอ่านสลิป
-        showToast(t('toast_scanning'), 'warn');
-        
-        Tesseract.recognize(file, 'tha+eng', { logger: m => console.log(m) }).then(({ data: { text } }) => {
-            const match = text.match(/(\d{1,3}(?:,\d{3})*\.\d{2})|(\d+\.\d{2})/);
-            if (match && match[0]) {
-                let amountStr = match[0].replace(/,/g, '');
-                $('income-amt').value = amountStr;
-                showToast(t('toast_scan_success'), 'success'); // สำเร็จแล้วเด้งเป็นสีเขียว (เพราะเป็นรายรับ)
-            } else {
-                showToast(t('toast_scan_fail'), 'error');
-            }
-        }).catch(err => {
-            console.error(err);
-            showToast(t('toast_scan_error'), 'error');
-        }).finally(() => {
-            $('slip-input-income').value = ''; 
-        });
-    });
-
-    // --- Add Income Logic ---
-    $('add-income-btn').addEventListener('click', () => {
-        $('income-desc').value = '';
-        $('income-amt').value = '';
+    bindEvent('add-income-btn', 'click', () => {
+        $('income-desc').value = ''; $('income-amt').value = '';
         $('income-modal').classList.add('show');
     });
-
-    $('cancel-income').addEventListener('click', () => $('income-modal').classList.remove('show'));
-
-    $('confirm-income').addEventListener('click', () => {
+    bindEvent('cancel-income', 'click', () => $('income-modal').classList.remove('show'));
+    bindEvent('confirm-income', 'click', () => {
         const desc = $('income-desc').value.trim() || t('general_income');
         const amt = parseFloat($('income-amt').value.replace(/[^0-9.]/g, ''));
         if (isNaN(amt) || amt <= 0) return showToast(t('toast_amount_req'), 'error');
-
         state.transactions.unshift({ id: Date.now(), description: desc, amount: amt, type: 'income', dateStr: getDateStr(Date.now()), timestamp: Date.now() });
         save();
         showToast(`${t('toast_received')} ${fmt(amt)}`, 'success');
@@ -713,64 +588,64 @@
         renderAll();
     });
 
-    $('theme-btn').addEventListener('click', () => {
-        state.theme = state.theme === 'dark' ? 'light' : 'dark';
-        save(); applyTheme(); renderAll();
-    });
+    bindEvent('theme-btn', 'click', () => { state.theme = state.theme === 'dark' ? 'light' : 'dark'; save(); applyTheme(); renderAll(); });
+    bindEvent('lang-btn', 'click', () => { state.lang = state.lang === 'th' ? 'en' : 'th'; save(); applyTranslations(); renderAll(); });
 
-    $('lang-btn').addEventListener('click', () => {
-        state.lang = state.lang === 'th' ? 'en' : 'th';
-        save(); applyTranslations(); renderAll();
+    window.toggleAccordion = function(id) { const el = $(id); if (el) el.classList.toggle('open'); }
+    document.querySelectorAll('.accordion-header').forEach(header => {
+        header.addEventListener('click', () => {
+            const acc = header.parentElement;
+            if(acc) acc.classList.toggle('open');
+        });
     });
-
-    window.toggleAccordion = function(id) { $(id).classList.toggle('open'); }
 
     document.querySelectorAll('.nav-btn').forEach(btn => {
         btn.addEventListener('click', () => {
             document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
             document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
             btn.classList.add('active');
-            $('page-' + btn.dataset.page).classList.add('active');
+            const page = $('page-' + btn.dataset.page);
+            if (page) page.classList.add('active');
             if (document.body.classList.contains('edit-mode')) toggleEditMode();
             renderAll();
         });
     });
-
-    $('split-check').addEventListener('change', (e) => $('split-box').classList.toggle('active', e.target.checked));
-
+    
+    const splitCheck = $('split-check');
+    if (splitCheck) splitCheck.addEventListener('change', (e) => { const sb = $('split-box'); if(sb) sb.classList.toggle('active', e.target.checked); });
+    
     window.toggleEditMode = function() {
         document.body.classList.toggle('edit-mode');
         const isOn = document.body.classList.contains('edit-mode');
-        document.querySelectorAll('.edit-toggle-btn').forEach(btn => {
+        const btn = $('edit-toggle-btn');
+        if (btn) {
             btn.innerHTML = isOn ? `<i class="fas fa-times"></i> ${t('done')}` : `<i class="fas fa-edit"></i> ${t('edit_delete')}`;
             btn.classList.toggle('active', isOn);
-        });
+        }
     }
 
+    bindEvent('edit-toggle-btn', 'click', toggleEditMode);
+
     function categorizeTx(desc) {
-        const lowerDesc = desc.toLowerCase();
+        const lowerDesc = (desc || '').toLowerCase();
         for (const key in categories) {
             if (key === 'other') continue;
             const cat = categories[key];
             for (const kw of cat.keywords) {
-                if (lowerDesc.includes(kw.toLowerCase())) {
-                    return { key, ...cat };
-                }
+                if (lowerDesc.includes(kw.toLowerCase())) { return { key, ...cat }; }
             }
         }
         return { key: 'other', ...categories.other };
     }
-
     function calculateMainBalance() {
         return state.transactions.reduce((acc, t) => {
-            const amt = t.amount || 0;
+            const amt = Number(t.amount) || 0;
             if (t.type === 'income') return acc + amt;
             if (t.type === 'expense') return acc - amt;
             return acc; 
         }, 0);
     }
-
-    $('budget-card').addEventListener('click', () => {
+    bindEvent('budget-card', 'click', () => {
         const mainBal = calculateMainBalance();
         if (mainBal <= 0) return showToast(t('toast_need_income'), 'error');
         const input = prompt(t('prompt_budget'), state.dailyBudget || mainBal);
@@ -780,77 +655,57 @@
             state.dailyBudget = num; save(); renderAll(); showToast(t('toast_budget_saved'), 'success');
         }
     });
-
-    $('reset-budget-btn').addEventListener('click', () => {
-        state.dailyBudget = 0; save(); renderAll(); showToast(t('toast_budget_reset'), 'success');
-    });
-
-    const fmt = num => '฿' + (num || 0).toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,');
+    bindEvent('reset-budget-btn', 'click', () => { state.dailyBudget = 0; save(); renderAll(); showToast(t('toast_budget_reset'), 'success'); });
+    
+    const fmt = num => '฿' + (Number(num) || 0).toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,');
     const getLocale = () => state.lang === 'th' ? 'th-TH' : 'en-US';
     const getDateStr = (ts) => new Date(ts).toLocaleDateString(getLocale(), { day: '2-digit', month: 'short' });
 
-    $('add-btn').addEventListener('click', () => {
+    bindEvent('add-btn', 'click', () => {
         const desc = $('description').value.trim() || t('general_expense');
         const amt = parseFloat($('amount').value.replace(/[^0-9.]/g, ''));
         if (isNaN(amt) || amt <= 0) return showToast(t('toast_amount_req'), 'error');
-
         let roundUpMsg = '';
         if ($('round-up-check').checked) {
             const roundedAmt = Math.ceil(amt / 10) * 10;
             const savingsAdded = roundedAmt - amt;
             if (savingsAdded > 0) {
                 let roundUpSav = state.savings.find(s => s.name === t('round_up_sav_name'));
-                if (!roundUpSav) {
-                    roundUpSav = { id: Date.now() + 999, name: t('round_up_sav_name'), current: 0 };
-                    state.savings.push(roundUpSav);
-                }
+                if (!roundUpSav) { roundUpSav = { id: Date.now() + 999, name: t('round_up_sav_name'), current: 0 }; state.savings.push(roundUpSav); }
                 roundUpSav.current += savingsAdded;
                 state.transactions.unshift({ id: Date.now()+1, description: `${t('hide_money')}: ${t('round_up_sav_name')}`, amount: savingsAdded, type: 'expense', subtype: 'savings', dateStr: getDateStr(Date.now()), timestamp: Date.now() });
                 roundUpMsg = `${t('toast_round_up')} ${fmt(savingsAdded)}`;
             }
         }
-
         if ($('split-check').checked) {
             const people = parseInt($('split-people').value) || 2;
             const myShare = amt / people;
             const subtype = $('split-type').value;
-            
             if (subtype === 'lend') {
                 state.transactions.unshift({ id: Date.now(), description: desc, amount: amt, type: 'expense', dateStr: getDateStr(Date.now()), timestamp: Date.now() });
                 const debtAmount = amt - myShare;
-                if (debtAmount > 0) {
-                    state.transactions.unshift({ id: Date.now() + 1, description: `${desc} (${t('people_ph').split(' ')[0]} ${people})`, type: 'debt', subtype: 'lend', totalAmount: debtAmount, paidAmount: 0, settled: false, dateStr: getDateStr(Date.now()), timestamp: Date.now() });
-                }
+                if (debtAmount > 0) { state.transactions.unshift({ id: Date.now() + 1, description: `${desc} (${t('people_ph').split(' ')[0]} ${people})`, type: 'debt', subtype: 'lend', totalAmount: debtAmount, paidAmount: 0, settled: false, dateStr: getDateStr(Date.now()), timestamp: Date.now() }); }
             } else {
-                if (myShare > 0) {
-                    state.transactions.unshift({ id: Date.now(), description: `${desc} (${t('people_ph').split(' ')[0]} ${people})`, type: 'debt', subtype: 'borrow', totalAmount: myShare, paidAmount: 0, settled: false, dateStr: getDateStr(Date.now()), timestamp: Date.now() });
-                }
+                if (myShare > 0) { state.transactions.unshift({ id: Date.now(), description: `${desc} (${t('people_ph').split(' ')[0]} ${people})`, type: 'debt', subtype: 'borrow', totalAmount: myShare, paidAmount: 0, settled: false, dateStr: getDateStr(Date.now()), timestamp: Date.now() }); }
             }
         } else {
             let newTx = { id: Date.now(), description: desc, amount: amt, type: 'expense', dateStr: getDateStr(Date.now()), timestamp: Date.now() };
             state.transactions.unshift(newTx);
         }
-        
         save();
         $('description').value = ''; $('amount').value = ''; $('split-check').checked = false; $('split-box').classList.remove('active'); $('round-up-check').checked = false;
-        
-        if (roundUpMsg) {
-            showToast(`${t('toast_paid')} ${fmt(amt)} (${roundUpMsg})`, 'expense');
-        } else {
-            showToast(`${t('toast_paid')} ${fmt(amt)}`, 'expense');
-        }
+        if (roundUpMsg) { showToast(`${t('toast_paid')} ${fmt(amt)} (${roundUpMsg})`, 'expense'); } else { showToast(`${t('toast_paid')} ${fmt(amt)}`, 'expense'); }
         renderAll();
     });
 
-    $('add-bill-btn').addEventListener('click', () => {
+    bindEvent('add-bill-btn', 'click', () => {
         const name = $('bill-name').value.trim(); const amount = parseFloat($('bill-amount').value); const day = parseInt($('bill-day').value);
         if (!name || isNaN(amount) || isNaN(day) || day < 1 || day > 31) return showToast(t('toast_invalid_bill'), 'error');
         state.bills.push({ id: Date.now(), name, amount, dueDay: day, lastPaid: '' });
         save(); $('bill-name').value=''; $('bill-amount').value=''; $('bill-day').value='';
         showToast(t('toast_bill_added'), 'success'); renderAll();
     });
-
-    $('add-inst-btn').addEventListener('click', () => {
+    bindEvent('add-inst-btn', 'click', () => {
         const name = $('inst-name').value.trim(); const monthly = parseFloat($('inst-monthly').value);
         const total = parseInt($('inst-total').value); const day = parseInt($('inst-day').value) || 1;
         if (!name || isNaN(monthly) || isNaN(total)) return showToast(t('toast_invalid_inst'), 'error');
@@ -858,8 +713,7 @@
         save(); $('inst-name').value=''; $('inst-monthly').value=''; $('inst-total').value=''; $('inst-day').value='';
         showToast(t('toast_inst_added'), 'success'); renderAll();
     });
-
-    $('add-sav-btn').addEventListener('click', () => {
+    bindEvent('add-sav-btn', 'click', () => {
         const name = $('sav-name').value.trim(); const amount = parseFloat($('sav-amount').value);
         if (!name || isNaN(amount) || amount <= 0) return showToast(t('toast_invalid_sav'), 'error');
         state.savings.push({ id: Date.now(), name, current: amount });
@@ -868,51 +722,31 @@
         showToast(t('toast_sav_added'), 'success'); renderAll();
     });
 
-    $('panic-btn').addEventListener('click', () => {
-        $('panic-input').value = '';
-        $('panic-result').innerText = '';
-        $('panic-modal').classList.add('show');
-    });
-
-    $('cancel-panic').addEventListener('click', () => $('panic-modal').classList.remove('show'));
-    
-    $('panic-input').addEventListener('input', (e) => {
+    bindEvent('panic-btn', 'click', () => { $('panic-input').value = ''; $('panic-result').innerText = ''; $('panic-modal').classList.add('show'); });
+    bindEvent('cancel-panic', 'click', () => $('panic-modal').classList.remove('show'));
+    bindEvent('panic-input', 'input', (e) => {
         const price = parseFloat(e.target.value.replace(/[^0-9.]/g, '')) || 0;
         const mainBal = calculateMainBalance();
         if (price === 0) { $('panic-result').innerText = ''; return; }
-        
         const futureBalance = mainBal - price;
         let msg = '';
-        if (futureBalance < 0) {
-            msg = `${t('panic_cant_afford')} (${fmt(futureBalance)})`;
-            $('panic-result').style.color = 'var(--expense-color)';
-        } else {
+        if (futureBalance < 0) { msg = `${t('panic_cant_afford')} (${fmt(futureBalance)})`; $('panic-result').style.color = 'var(--expense-color)'; }
+        else {
             const todayStr = new Date().toDateString();
-            const todayExpense = state.transactions.filter(tx => tx.type === 'expense' && tx.subtype !== 'bill' && tx.subtype !== 'inst' && tx.subtype !== 'savings' && new Date(tx.timestamp).toDateString() === todayStr).reduce((acc, tx) => acc + tx.amount, 0);
+            const todayExpense = state.transactions.filter(tx => tx.type === 'expense' && tx.subtype !== 'bill' && tx.subtype !== 'inst' && tx.subtype !== 'savings' && new Date(tx.timestamp).toDateString() === todayStr).reduce((acc, tx) => acc + (Number(tx.amount) || 0), 0);
             const remainingBudget = state.dailyBudget - todayExpense - price;
-            
             if (state.dailyBudget > 0) {
-                if (remainingBudget < 0) {
-                    msg = `${t('panic_over_budget')} ${fmt(Math.abs(remainingBudget))} ${t('panic_mama')}`;
-                    $('panic-result').style.color = 'var(--warn-color)';
-                } else {
-                    msg = `${t('panic_ok')} ${t('panic_daily_left')} ${fmt(remainingBudget)}`;
-                    $('panic-result').style.color = 'var(--income-color)';
-                }
-            } else {
-                msg = `${t('panic_ok')} ${t('panic_daily_left')} ${fmt(futureBalance)}`;
-                $('panic-result').style.color = 'var(--income-color)';
-            }
+                if (remainingBudget < 0) { msg = `${t('panic_over_budget')} ${fmt(Math.abs(remainingBudget))} ${t('panic_mama')}`; $('panic-result').style.color = 'var(--warn-color)'; }
+                else { msg = `${t('panic_ok')} ${t('panic_daily_left')} ${fmt(remainingBudget)}`; $('panic-result').style.color = 'var(--income-color)'; }
+            } else { msg = `${t('panic_ok')} ${t('panic_daily_left')} ${fmt(futureBalance)}`; $('panic-result').style.color = 'var(--income-color)'; }
         }
         $('panic-result').innerText = msg;
     });
-
-    $('confirm-panic').addEventListener('click', () => {
+    bindEvent('confirm-panic', 'click', () => {
         const price = parseFloat($('panic-input').value.replace(/[^0-9.]/g, '')) || 0;
         if (price > 0) {
             state.transactions.unshift({ id: Date.now(), description: t('panic_buy'), amount: price, type: 'expense', dateStr: getDateStr(Date.now()), timestamp: Date.now() });
-            save(); renderAll();
-            showToast(`${t('toast_paid')} ${fmt(price)}`, 'expense');
+            save(); renderAll(); showToast(`${t('toast_paid')} ${fmt(price)}`, 'expense');
         }
         $('panic-modal').classList.remove('show');
     });
@@ -924,11 +758,9 @@
         else if (type === 'bill') item = state.bills.find(b => b.id === id);
         else if (type === 'sav') item = state.savings.find(s => s.id === id);
         if (!item) return;
-
         const desc = item.description || item.name;
         openActionModal(t('confirm_delete_title'), desc, {id, type, action: 'delete'}, false, true);
     };
-
     window.askAction = function(action, type, id) {
         let item;
         if (type === 'tx') item = state.transactions.find(t => t.id === id);
@@ -936,7 +768,6 @@
         else if (type === 'bill') item = state.bills.find(b => b.id === id);
         else if (type === 'sav') item = state.savings.find(s => s.id === id);
         if (!item) return;
-
         const name = item.description || item.name;
         if (action === 'payBill') openActionModal(t('pay_bill'), name, {id, type:'bill', action:'payBill'});
         else if (action === 'payInst') openActionModal(t('pay_inst'), name, {id, type:'inst', action:'payInst'});
@@ -951,7 +782,6 @@
         $('confirm-action-2').className = isDanger ? 'btn-confirm danger' : 'btn-confirm';
         $('action-modal').classList.add('show');
     }
-
     function openConfirmModal(title, desc, target, isDanger = true) {
         actionTarget = target;
         $('modal-title').innerText = title; $('modal-desc').innerText = desc;
@@ -959,21 +789,17 @@
         $('confirm-modal').classList.add('show');
     }
 
-    $('cancel-action').addEventListener('click', () => $('confirm-modal').classList.remove('show'));
-    $('confirm-action').addEventListener('click', () => {
+    bindEvent('cancel-action', 'click', () => $('confirm-modal').classList.remove('show'));
+    bindEvent('confirm-action', 'click', () => {
         if (!actionTarget) return;
         if (actionTarget.action === 'reset') {
             $('confirm-modal').classList.remove('show');
-            // แก้ไข Date.Now() เป็น Date.now() ตัวเล็ก
             state = { transactions: [], installments: [], bills: [], savings: [], dailyBudget: 0, lang: state.lang, theme: state.theme, createdAt: Date.now() };
-            save(); 
-            showToast(t('toast_reset_done'), 'success');
-            renderAll();
+            save(); showToast(t('toast_reset_done'), 'success'); renderAll();
         }
     });
-
-    $('cancel-action-2').addEventListener('click', () => $('action-modal').classList.remove('show'));
-    $('confirm-action-2').addEventListener('click', () => {
+    bindEvent('cancel-action-2', 'click', () => $('action-modal').classList.remove('show'));
+    bindEvent('confirm-action-2', 'click', () => {
         if (!actionTarget) return;
         const { id, type, action } = actionTarget;
         const currentMonth = new Date().toLocaleString('en-US', { month: '2-digit', year: 'numeric' });
@@ -1035,16 +861,13 @@
             }
             $('action-modal').classList.remove('show'); 
         }
-        
-        save(); 
-        renderAll();
+        save(); renderAll();
     });
 
     function checkNotifications() {
         const today = new Date(); const currentDay = today.getDate();
         const currentMonth = today.toLocaleString('en-US', { month: '2-digit', year: 'numeric' });
         let alerts = [];
-
         state.bills.forEach(bill => {
             if (bill.lastPaid !== currentMonth) {
                 const daysLeft = bill.dueDay - currentDay;
@@ -1052,115 +875,91 @@
                 else if (daysLeft < 0) alerts.push(`${bill.name} (${t('overdue_word')})`);
             }
         });
-
         state.installments.forEach(inst => {
             if (inst.paidMonths < inst.totalMonths && inst.lastPaidMonth !== currentMonth) {
                 const daysLeft = (inst.dueDay || 1) - currentDay;
                 if (daysLeft >= 0 && daysLeft <= 7) alerts.push(`${inst.name} (${daysLeft === 0 ? t('today_word') : daysLeft + ' ' + t('days_word')})`);
             }
         });
-
+        const banner = $('notif-banner'); const badge = $('finance-badge');
         if (alerts.length > 0) {
             $('notif-text').innerText = `${t('upcoming_alert')} ${alerts.join(', ')}`;
-            $('notif-banner').classList.add('show');
-            $('finance-badge').classList.add('show');
+            if(banner) banner.classList.add('show');
+            if(badge) badge.classList.add('show');
         } else {
-            $('notif-banner').classList.remove('show');
-            $('finance-badge').classList.remove('show');
+            if(banner) banner.classList.remove('show');
+            if(badge) badge.classList.remove('show');
         }
     }
 
     function drawChart() {
-        const canvas = $('pie-chart');
-        if (!canvas) return;
+        const canvas = $('pie-chart'); if (!canvas) return;
         const ctx = canvas.getContext('2d');
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        
         const expenses = state.transactions.filter(tx => tx.type === 'expense' && !tx.subtype);
-        if (expenses.length === 0) {
-            $('chart-legend').innerHTML = `<p style="color:var(--text-muted)">${t('no_chart_data')}</p>`;
-            return;
-        }
-
+        if (expenses.length === 0) { $('chart-legend').innerHTML = `<p style="color:var(--text-muted)">${t('no_chart_data')}</p>`; return; }
         const catTotals = {};
         expenses.forEach(tx => {
             const cat = categorizeTx(tx.description);
             if (!catTotals[cat.key]) catTotals[cat.key] = 0;
-            catTotals[cat.key] += tx.amount;
+            catTotals[cat.key] += Number(tx.amount) || 0;
         });
-
         const total = Object.values(catTotals).reduce((a, b) => a + b, 0);
+        if (total <= 0) return;
         let startAngle = -Math.PI / 2;
         let legendHtml = '';
-
         Object.keys(catTotals).forEach(key => {
             const cat = categories[key];
             const amount = catTotals[key];
             const angle = (amount / total) * 2 * Math.PI;
-            
             ctx.beginPath();
             ctx.moveTo(canvas.width / 2, canvas.height / 2);
             ctx.arc(canvas.width / 2, canvas.height / 2, canvas.width / 2 - 5, startAngle, startAngle + angle);
             ctx.closePath();
             ctx.fillStyle = cat.color;
             ctx.fill();
-            
             startAngle += angle;
-            
             const percent = ((amount / total) * 100).toFixed(0);
             legendHtml += `<div style="display:flex; justify-content:space-between; margin-bottom:5px; align-items:center;">
                 <span style="font-size:0.85rem;">${cat.icon} ${state.lang === 'th' ? cat.name_th : cat.name_en}</span>
                 <span style="font-size:0.8rem; color:var(--text-muted);">${fmt(amount)} (${percent}%)</span>
             </div>`;
         });
-        
         $('chart-legend').innerHTML = legendHtml;
     }
 
     function calculateStreak() {
         const streakEl = $('streak-amount-container');
         if (!streakEl) return;
-        
-        if (state.dailyBudget <= 0) {
-            streakEl.innerHTML = `<small style="color:var(--text-muted); font-size:0.8rem; font-weight:500;">${t('streak_need_budget')}</small>`;
-            return;
-        }
-
+        if (state.dailyBudget <= 0) { streakEl.innerHTML = `<small style="color:var(--text-muted); font-size:0.8rem; font-weight:500;">${t('streak_need_budget')}</small>`; return; }
         const today = new Date();
         let savedDays = 0;
         const startCheckDate = new Date(state.createdAt);
         startCheckDate.setHours(0,0,0,0);
-        
         for (let i = 0; i < 30; i++) {
             const checkDate = new Date(today);
             checkDate.setDate(today.getDate() - i);
             checkDate.setHours(0,0,0,0);
             if (checkDate < startCheckDate) break;
-            
             const dayStr = checkDate.toDateString();
             const dayExpense = state.transactions.filter(tx => 
                 tx.type === 'expense' && tx.subtype !== 'bill' && tx.subtype !== 'inst' && tx.subtype !== 'savings' && new Date(tx.timestamp).toDateString() === dayStr
-            ).reduce((acc, tx) => acc + tx.amount, 0);
-            
+            ).reduce((acc, tx) => acc + (Number(tx.amount) || 0), 0);
             if (dayExpense <= state.dailyBudget) savedDays++;
         }
-        
         streakEl.innerText = `${savedDays} / 30 ${t('days_word')}`;
     }
 
     function updateUI() {
         const mainBalance = calculateMainBalance();
-        const savingsTotal = state.savings.reduce((acc, s) => acc + s.current, 0);
-
+        const savingsTotal = state.savings.reduce((acc, s) => acc + (Number(s.current) || 0), 0);
         $('balance').innerText = fmt(mainBalance);
         $('balance').className = 'balance ' + (mainBalance < 0 ? 'negative' : '');
         $('balance-sub').innerText = `${t('hidden_money')} ${fmt(savingsTotal)}`;
-
         const todayStr = new Date().toDateString();
         const todayExpense = state.transactions.filter(tx => 
             tx.type === 'expense' && tx.subtype !== 'bill' && tx.subtype !== 'inst' && tx.subtype !== 'savings' && new Date(tx.timestamp).toDateString() === todayStr
-        ).reduce((acc, tx) => acc + tx.amount, 0);
-
+        ).reduce((acc, tx) => acc + (Number(tx.amount) || 0), 0);
         if (state.dailyBudget > 0) {
             const remaining = state.dailyBudget - todayExpense;
             $('daily-remaining').innerText = fmt(remaining);
@@ -1171,7 +970,6 @@
             $('daily-remaining').className = 'budget-amount ' + (mainBalance < 0 ? 'over' : '');
             $('budget-sub-text').innerText = `${t('spent_today')} ${fmt(todayExpense)}`;
         }
-        
         checkNotifications();
         drawChart();
         calculateStreak();
@@ -1179,21 +977,22 @@
 
     function renderTxList(list, targetEl, limit = 999) {
         const container = $(targetEl);
-        if (list.length === 0) return container.innerHTML = `<div class="empty-state"><i class="fas fa-receipt"></i><p>${t('no_tx')}</p></div>`;
+        if (!container) return;
+        if (list.length === 0) { container.innerHTML = `<div class="empty-state"><i class="fas fa-receipt"></i><p>${t('no_tx')}</p></div>`; return; }
         const grouped = {};
         list.slice(0, limit).forEach(tx => { if (!grouped[tx.dateStr]) grouped[tx.dateStr] = []; grouped[tx.dateStr].push(tx); });
         let html = '';
         for (const date in grouped) {
             html += `<div style="margin: 1rem 0 0.5rem; font-size: 0.75rem; color: var(--text-muted); font-weight: 600; padding-left: 0.5rem;">${date}</div>`;
             grouped[date].forEach(tx => {
-                let iconClass = tx.type, sign = '-', amountClass = tx.type, icon = 'arrow-up', displayAmount = tx.amount || 0;
+                let iconClass = tx.type, sign = '-', amountClass = tx.type, icon = 'arrow-up', displayAmount = Number(tx.amount) || 0;
                 if (tx.type === 'income') { sign = '+'; icon = 'arrow-down'; }
                 if (tx.type === 'expense') { 
                     sign = '-'; 
                     const cat = categorizeTx(tx.description);
                     icon = cat.icon === '📦' ? 'arrow-up' : 'tag'; 
                 }
-                if (tx.type === 'debt') { iconClass = 'debt'; icon = tx.subtype === 'lend' ? 'hand-holding-usd' : 'hand-holding'; displayAmount = tx.totalAmount || 0; amountClass = tx.settled ? 'settled' : 'debt'; sign = tx.subtype === 'lend' ? '+' : '-'; }
+                if (tx.type === 'debt') { iconClass = 'debt'; icon = tx.subtype === 'lend' ? 'hand-holding-usd' : 'hand-holding'; displayAmount = Number(tx.totalAmount) || 0; amountClass = tx.settled ? 'settled' : 'debt'; sign = tx.subtype === 'lend' ? '+' : '-'; }
                 
                 let rightContent = `<span class="tx-amount ${amountClass}">${sign}${fmt(displayAmount)}</span>`;
                 if (tx.type === 'debt' && !tx.settled) rightContent += `<button onclick="askAction('payDebt', 'tx', ${tx.id})" class="action-btn-sm warn">${t('settle_debt')}</button>`;
@@ -1236,7 +1035,24 @@
         }
 
         const debts = state.transactions.filter(tx => tx.type === 'debt');
-        $('debt-list').innerHTML = debts.length === 0 ? `<div class="empty-state" style="padding:1rem;"><i class="fas fa-handshake"></i><p>${t('no_debts')}</p></div>` : debts.map(tx => `<div class="tx-item"><div class="delete-btn" onclick="askDelete('tx', ${tx.id})"><i class="fas fa-times"></i></div><div class="tx-icon debt"><i class="fas fa-hand-holding-usd"></i></div><div class="tx-info"><span>${tx.description}</span><small>${t('remaining_text')} ${fmt((tx.totalAmount||0)-(tx.paidAmount||0))} / ${t('total_text')} ${fmt(tx.totalAmount||0)}</small></div><div class="tx-right">${!tx.settled ? `<button onclick="askAction('payDebt', 'tx', ${tx.id})" class="action-btn-sm warn">${t('settle_debt')}</button>` : `<small style="color:#ccc;">${t('settled')}</small>`}</div></div>`).join('');
+        const activeDebts = debts.filter(tx => !tx.settled);
+        const settledDebts = debts.filter(tx => tx.settled).slice(0, 5);
+        
+        let debtHtml = '';
+
+        if (activeDebts.length === 0 && settledDebts.length === 0) {
+            debtHtml = `<div class="empty-state" style="padding:1rem;"><i class="fas fa-handshake"></i><p>${t('no_debts')}</p></div>`;
+        } else {
+            if (activeDebts.length > 0) {
+                debtHtml += activeDebts.map(tx => `<div class="tx-item"><div class="delete-btn" onclick="askDelete('tx', ${tx.id})"><i class="fas fa-times"></i></div><div class="tx-icon debt"><i class="fas fa-hand-holding-usd"></i></div><div class="tx-info"><span>${tx.description}</span><small>${t('remaining_text')} ${fmt((tx.totalAmount||0)-(tx.paidAmount||0))} / ${t('total_text')} ${fmt(tx.totalAmount||0)}</small></div><div class="tx-right"><button onclick="askAction('payDebt', 'tx', ${tx.id})" class="action-btn-sm warn">${t('settle_debt')}</button></div></div>`).join('');
+            }
+            if (settledDebts.length > 0) {
+                debtHtml += `<div style="margin: 1.5rem 0 0.5rem; font-size: 0.75rem; color: var(--text-muted); font-weight: 600; padding-left: 0.5rem;">${t('settled_debts')}</div>`;
+                debtHtml += settledDebts.map(tx => `<div class="tx-item"><div class="delete-btn" onclick="askDelete('tx', ${tx.id})"><i class="fas fa-times"></i></div><div class="tx-icon debt"><i class="fas fa-hand-holding-usd"></i></div><div class="tx-info"><span>${tx.description}</span><small>${t('remaining_text')} 0.00 / ${t('total_text')} ${fmt(tx.totalAmount||0)}</small></div><div class="tx-right"><span class="tx-amount settled">${t('settled')}</span></div></div>`).join('');
+            }
+        }
+        const debtList = $('debt-list');
+        if (debtList) debtList.innerHTML = debtHtml;
     }
 
     function renderAll() {
@@ -1246,13 +1062,13 @@
         renderFinancePage();
     }
 
-    $('export-csv-btn').addEventListener('click', () => {
+    bindEvent('export-csv-btn', 'click', () => {
         let csv = '\uFEFF'; 
         csv += 'Date,Description,Type,Amount,Category,Subtype\n';
         state.transactions.forEach(tx => {
             const cat = categorizeTx(tx.description);
             const date = new Date(tx.timestamp).toLocaleDateString('en-GB');
-            const desc = `"${tx.description.replace(/"/g, '""')}"`;
+            const desc = `"${(tx.description || '').replace(/"/g, '""')}"`;
             const type = tx.type;
             const amount = tx.amount || tx.totalAmount || 0;
             const catName = state.lang === 'th' ? cat.name_th : cat.name_en;
@@ -1266,62 +1082,53 @@
         URL.revokeObjectURL(url);
         showToast(t('toast_exported'), 'success');
     });
-
-    $('export-btn').addEventListener('click', () => {
+    bindEvent('export-btn', 'click', () => {
         const dataStr = JSON.stringify(state); const blob = new Blob([dataStr], { type: "application/json" });
         const url = URL.createObjectURL(blob); const a = document.createElement('a');
         a.href = url; a.download = "flowfin_backup.json"; a.click(); URL.revokeObjectURL(url);
         showToast(t('toast_exported'), 'success');
     });
-
-    $('import-btn').addEventListener('click', () => $('import-file').click());
-    $('import-file').addEventListener('change', (e) => {
+    bindEvent('import-btn', 'click', () => $('import-file').click());
+    bindEvent('import-file', 'change', (e) => {
         const file = e.target.files[0]; if (!file) return;
         const reader = new FileReader();
         reader.onload = (event) => {
             try { 
                 const importedState = JSON.parse(event.target.result);
                 state = importedState; 
-                if (!state.lang) state.lang = 'th'; 
-                if (!state.theme) state.theme = 'light';
-                if (!state.createdAt) state.createdAt = Date.now();
+                if (!state || typeof state !== 'object') state = JSON.parse(JSON.stringify(defaultState));
+                for (let key in defaultState) { if (state[key] === undefined) state[key] = defaultState[key]; }
                 save(); applyTheme(); applyTranslations(); renderAll(); showToast(t('toast_imported'), 'success'); 
-            }
-            catch (err) { showToast(t('toast_invalid_file'), 'error'); }
+            } catch (err) { showToast(t('toast_invalid_file'), 'error'); }
         }; reader.readAsText(file);
     });
-
-    $('reset-btn').addEventListener('click', () => {
+    bindEvent('reset-btn', 'click', () => {
         openConfirmModal(t('confirm_reset_title'), t('confirm_reset_desc'), {action: 'reset'}, true);
     });
 
-    // ระบบแสดงสี Toast แบบแยกประเภท
-    // type: 'success' (เขียว), 'error' (แดง), 'expense' (แดง), 'warn' (ส้ม/เหลือง)
     function showToast(msg, type = 'success') {
         const tEl = $('toast');
+        if (!tEl) return;
         tEl.innerText = msg;
-        if (type === 'error' || type === 'expense') {
-            tEl.style.background = 'var(--expense-color)'; // สีแดง
-        } else if (type === 'success') {
-            tEl.style.background = 'var(--income-color)'; // สีเขียว
-        } else if (type === 'warn') {
-            tEl.style.background = 'var(--warn-color)'; // สีส้ม/เหลือง
-        } else {
-            tEl.style.background = 'var(--text-main)'; // สีดำ/เทา
-        }
+        if (type === 'error' || type === 'expense') { tEl.style.background = 'var(--expense-color)'; } 
+        else if (type === 'success') { tEl.style.background = 'var(--income-color)'; } 
+        else if (type === 'warn') { tEl.style.background = 'var(--warn-color)'; } 
+        else { tEl.style.background = 'var(--text-main)'; }
         tEl.style.color = 'white';
         tEl.classList.add('show');
         if (toastTimer) clearTimeout(toastTimer);
-        const duration = (type === 'warn') ? 10000 : 2000; // ถ้าเป็นสีส้ม (กำลังโหลด) ให้แสดงนานหน่อย
+        const duration = (type === 'warn') ? 10000 : 2000; 
         toastTimer = setTimeout(() => tEl.classList.remove('show'), duration);
     }
 
     function save() { safeSet('ff_state_v2', state); }
     
+    // Initialize App
     applyTheme();
     applyTranslations();
     updateVisitorCount();
     renderAll();
+});
 </script>
 </body>
 </html>
