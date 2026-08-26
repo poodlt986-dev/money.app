@@ -6,6 +6,8 @@
     <title>FlowFin Pro - Personal Finance</title>
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- โหลด Tesseract.js สำหรับสแกนสลิปแบบ Offline -->
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
     <style>
         :root {
             --bg-color: #f0f2f5;
@@ -60,7 +62,6 @@
         .balance.negative { color: var(--expense-color); }
         .balance-sub { font-size: 0.75rem; color: var(--text-muted); margin-top: 0.3rem; }
 
-        /* ปุ่มเพิ่มรายรับในกล่องยอดคงเหลือ */
         .add-income-btn { position: absolute; top: 50%; right: 1.5rem; transform: translateY(-50%); background: var(--income-color); color: white; border: none; padding: 0.5rem 1rem; border-radius: 20px; font-weight: 600; font-size: 0.8rem; cursor: pointer; display: flex; align-items: center; gap: 0.3rem; box-shadow: 0 2px 8px rgba(52, 199, 89, 0.3); }
         
         .notif-banner { background: var(--notif-bg); color: var(--notif-text); padding: 0.75rem 1rem; border-radius: 12px; margin-bottom: 1rem; font-size: 0.85rem; display: none; align-items: center; gap: 0.5rem; border: 1px solid var(--notif-border); }
@@ -90,9 +91,14 @@
         .card-box { background: var(--card-bg); padding: 1.2rem; border-radius: 16px; box-shadow: var(--shadow-sm); margin-bottom: 1rem; transition: background 0.3s; position: relative; }
         .card-box-title { font-size: 0.9rem; font-weight: 600; color: var(--text-muted); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; }
         
-        .form-group { display: flex; gap: 0.5rem; margin-bottom: 0.8rem; }
+        .form-group { display: flex; gap: 0.5rem; margin-bottom: 0.8rem; position: relative; }
         .input-field { flex: 1; padding: 0.8rem 1rem; border: 1px solid var(--border-color); border-radius: 12px; font-size: 0.95rem; outline: none; width: 100%; background: var(--input-bg); color: var(--text-main); transition: background 0.3s, border 0.3s; }
         .input-field:focus { border-color: var(--primary); }
+        
+        /* ปุ่มสแกนสลิป */
+        .scan-slip-btn { position: absolute; right: 0.8rem; top: 50%; transform: translateY(-50%); background: var(--toggle-bg); color: var(--primary); border: none; width: 36px; height: 36px; border-radius: 50%; cursor: pointer; font-size: 0.9rem; display: flex; align-items: center; justify-content: center; }
+        .scan-slip-btn:active { transform: translateY(-50%) scale(0.95); }
+
         .btn-primary { background: var(--text-main); color: var(--card-bg); border: none; padding: 0.85rem; border-radius: 12px; font-weight: 600; width: 100%; cursor: pointer; font-size: 1rem; }
         .btn-primary:active { transform: scale(0.98); }
         .btn-secondary { background: var(--toggle-bg); color: var(--text-main); border: none; padding: 0.85rem; border-radius: 12px; font-weight: 600; width: 100%; cursor: pointer; font-size: 0.9rem; margin-top: 0.5rem; }
@@ -163,7 +169,7 @@
         .btn-confirm.danger { background: var(--expense-color); }
         .btn-confirm.income { background: var(--income-color); }
 
-        .toast { position: fixed; bottom: -150px; left: 50%; transform: translateX(-50%); background: var(--text-main); color: var(--card-bg); padding: 0.75rem 1.5rem; border-radius: 100px; font-size: 0.85rem; box-shadow: 0 4px 12px rgba(0,0,0,0.15); transition: bottom 0.3s ease-out; z-index: 3000; max-width: 90%; text-align: center; pointer-events: none; opacity: 0; }
+        .toast { position: fixed; bottom: -150px; left: 50%; transform: translateX(-50%); color: white; padding: 0.75rem 1.5rem; border-radius: 100px; font-size: 0.85rem; box-shadow: 0 4px 12px rgba(0,0,0,0.15); transition: bottom 0.3s ease-out; z-index: 3000; max-width: 90%; text-align: center; pointer-events: none; opacity: 0; }
         .toast.show { bottom: 100px; opacity: 1; }
         
         .empty-state { text-align: center; padding: 2rem 1rem; color: var(--text-muted); }
@@ -194,7 +200,6 @@
         <h1 data-i18n="balance">ยอดเงินคงเหลือ</h1>
         <div class="balance" id="balance">฿0.00</div>
         <div class="balance-sub" id="balance-sub">เงินซ่อนไว้ ฿0.00</div>
-        <!-- ปุ่มเพิ่มรายรับ -->
         <button class="add-income-btn" id="add-income-btn"><i class="fas fa-plus"></i> <span data-i18n="add_income">เพิ่มเงิน</span></button>
     </div>
 
@@ -229,14 +234,15 @@
             </div>
         </div>
 
-        <!-- กล่องรายจ่าย (เอาไว้ใช้แค่รายจ่ายอย่างเดียว) -->
         <div class="card-box">
             <div class="card-box-title"><i class="fas fa-arrow-up" style="color:var(--expense-color)"></i> <span data-i18n="expense">รายจ่าย</span></div>
             <div class="form-group">
                 <input type="text" id="description" class="input-field" data-i18n-ph="desc_ph" placeholder="รายการ (ไม่ใส่ก็ได้)">
             </div>
             <div class="form-group">
-                <input type="text" id="amount" class="input-field" data-i18n-ph="amount_ph" placeholder="จำนวนเงิน" inputmode="decimal">
+                <input type="text" id="amount" class="input-field" data-i18n-ph="amount_ph" placeholder="จำนวนเงิน" inputmode="decimal" style="padding-right: 45px;">
+                <button class="scan-slip-btn" id="scan-slip-btn" title="สแกนสลิป"><i class="fas fa-camera"></i></button>
+                <input type="file" id="slip-input" accept="image/*" style="display:none;">
             </div>
             <label class="round-up-toggle">
                 <input type="checkbox" id="round-up-check" style="width:auto;">
@@ -365,7 +371,6 @@
     <button type="button" class="nav-btn" data-page="finance"><i class="fas fa-wallet"></i><span data-i18n="finance">การเงิน</span><div class="badge-dot" id="finance-badge"></div></button>
 </nav>
 
-<!-- Modal เพิ่มรายรับ -->
 <div class="modal-overlay" id="income-modal">
     <div class="modal-box">
         <h3><i class="fas fa-arrow-down" style="color:var(--income-color)"></i> <span data-i18n="add_income">เพิ่มรายรับ</span></h3>
@@ -382,7 +387,6 @@
     </div>
 </div>
 
-<!-- Modal Feedback -->
 <div class="modal-overlay" id="feedback-modal">
     <div class="modal-box">
         <h3 data-i18n="feedback_title">ให้คะแนน & ความคิดเห็น</h3>
@@ -468,7 +472,7 @@
             cancel_hide_money: "ยกเลิกการซ่อนเงิน", inst_paid_prefix: "ผ่อนชำระ", bill_paid_prefix: "จ่ายบิล", withdraw_prefix: "ถอนเงินออม",
             pay_bill: "จ่ายบิล", pay_inst: "จ่ายงวดนี้", withdraw: "ถอนออกมา", settle_debt: "เคลียร์หนี้",
             settled: "เคลียร์แล้ว", paid: "จ่ายแล้ว", due_on: "ครบกำหนดวันที่", of_every_month: "ของทุกเดือน", monthly: "ผ่อนเดือนละ", installments_short: "งวด", money_hidden_here: "เก็บเงินส่วนนี้ไว้",
-            remaining_text: "เหลือ", total_text: "รวม", round_up_sav_name: "เงินออมปัดเศษ",
+            remaining_text: "เหลือ", total_text: "รวม", round_up_sav_name: "เงินออมปัดเศษ", toast_paid: "จ่ายไป", toast_received: "รับเงิน",
             today_word: "วันนี้", overdue_word: "เกินกำหนด", no_chart_data: "ยังไม่มีข้อมูลค่าใช้จ่าย",
             no_tx: "ยังไม่มีรายการ", no_bills: "ไม่มีบิลประจำเดือน", no_inst: "ไม่มีสินค้าผ่อน", no_savings: "ยังไม่ได้ซ่อนเงินไว้", no_debts: "ไม่มีหนี้ค้างจ่าย",
             toast_saved: "บันทึกสำเร็จ!", toast_amount_req: "ใส่จำนวนเงินหน่อยนะ!", toast_budget_saved: "บันทึกงบประมาณแล้ว", toast_budget_reset: "รีเซ็ตงบประมาณเรียบร้อยแล้ว", toast_need_income: "ต้องมีรายรับก่อน ถึงจะตั้งงบประมาณได้นะ!",
@@ -479,7 +483,8 @@
             confirm_delete_title: "ยืนยันการลบ", confirm_delete_desc: "คุณต้องการลบรายการนี้ใช่ไหม?", settle_debt_title: "เคลียร์หนี้", settle_debt_desc: "ใส่ยอดที่จ่าย/ได้รับ",
             confirm_reset_title: "รีเซ็ตข้อมูลทั้งหมด", confirm_reset_desc: "ข้อมูลทั้งหมดจะถูกลบและกลับสู่ค่าเริ่มต้น คุณแน่ใจหรือไม่?", toast_reset_done: "รีเซ็ตข้อมูลเรียบร้อยแล้ว",
             toast_exported: "โหลดไฟล์สำเร็จ", toast_imported: "นำเข้าข้อมูลสำเร็จ!", toast_invalid_file: "ไฟล์ไม่ถูกต้อง",
-            panic_desc: "ใส่ราคาของที่อยากซื้อ แล้วแอปจะคำนวณให้ว่าเงินจะเหลือกี่บาท", panic_confirm_buy: "ยืนยันซื้อ (บันทึก)", panic_cant_afford: "ซื้อไม่ได้นะ! ติดลบแล้ว", panic_over_budget: "ซื้อได้ แต่เดือนนี้เกินงบไป", panic_mama: "ต้องกินมาม่า", panic_ok: "ซื้อได้!", panic_daily_left: "เงินเหลือใช้รายวันจะเหลือ"
+            panic_desc: "ใส่ราคาของที่อยากซื้อ แล้วแอปจะคำนวณให้ว่าเงินจะเหลือกี่บาท", panic_confirm_buy: "ยืนยันซื้อ (บันทึก)", panic_cant_afford: "ซื้อไม่ได้นะ! ติดลบแล้ว", panic_over_budget: "ซื้อได้ แต่เดือนนี้เกินงบไป", panic_mama: "ต้องกินมาม่า", panic_ok: "ซื้อได้!", panic_daily_left: "เงินเหลือใช้รายวันจะเหลือ",
+            toast_scanning: "กำลังอ่านสลิป... (ใช้เวลาสักครู่)", toast_scan_success: "อ่านสลิปสำเร็จ! ตรวจสอบยอดก่อนบันทึก", toast_scan_fail: "ไม่พบยอดเงินในสลิป กรุณากรอกเอง", toast_scan_error: "เกิดข้อผิดพลาดในการอ่านสลิป"
         },
         en: {
             balance: "Available Balance", hidden_money: "Hidden Money", expense_chart: "Expense Chart",
@@ -502,7 +507,7 @@
             cancel_hide_money: "Cancel hiding money", inst_paid_prefix: "Installment for", bill_paid_prefix: "Paid bill", withdraw_prefix: "Withdrew savings",
             pay_bill: "Pay Bill", pay_inst: "Pay This Month", withdraw: "Withdraw", settle_debt: "Settle Debt",
             settled: "Settled", paid: "Paid", due_on: "Due on", of_every_month: "of every month", monthly: "Monthly", installments_short: "months", money_hidden_here: "Money hidden here",
-            remaining_text: "Remaining", total_text: "Total", round_up_sav_name: "Round-up Savings",
+            remaining_text: "Remaining", total_text: "Total", round_up_sav_name: "Round-up Savings", toast_paid: "Paid", toast_received: "Received",
             today_word: "Today", days_word: "days", overdue_word: "Overdue", no_chart_data: "No expense data yet",
             no_tx: "No transactions yet", no_bills: "No monthly bills", no_inst: "No installments", no_savings: "No hidden savings", no_debts: "No debts",
             toast_saved: "Saved successfully!", toast_amount_req: "Please enter an amount!", toast_budget_saved: "Budget saved", toast_budget_reset: "Daily budget reset successfully", toast_need_income: "You need income before setting a budget!",
@@ -513,7 +518,8 @@
             confirm_delete_title: "Confirm Delete", confirm_delete_desc: "Are you sure you want to delete this?", settle_debt_title: "Settle Debt", settle_debt_desc: "Enter paid/received amount",
             confirm_reset_title: "Reset All Data", confirm_reset_desc: "All data will be erased and reset to default. Are you sure?", toast_reset_done: "Data reset successfully",
             toast_exported: "File exported", toast_imported: "Data imported successfully!", toast_invalid_file: "Invalid file",
-            panic_desc: "Enter the price of the item you want to buy, and the app will calculate how much money you'll have left.", panic_confirm_buy: "Confirm Buy (Save)", panic_cant_afford: "Can't afford it! You'll go negative", panic_over_budget: "You can buy it, but you're over budget", panic_mama: "You'll have to eat instant noodles", panic_ok: "You can buy it!", panic_daily_left: "Daily money left will be"
+            panic_desc: "Enter the price of the item you want to buy, and the app will calculate how much money you'll have left.", panic_confirm_buy: "Confirm Buy (Save)", panic_cant_afford: "Can't afford it! You'll go negative", panic_over_budget: "You can buy it, but you're over budget", panic_mama: "You'll have to eat instant noodles", panic_ok: "You can buy it!", panic_daily_left: "Daily money left will be",
+            toast_scanning: "Scanning slip... (Takes a moment)", toast_scan_success: "Slip read successfully! Verify amount before saving", toast_scan_fail: "Amount not found on slip, please enter manually", toast_scan_error: "Error reading slip"
         }
     };
 
@@ -558,13 +564,11 @@
     }
 
     function updateVisitorCount() {
-        const namespace = "flowfin-pro-phudit";
-        const key = "visits";
-        fetch(`https://api.counterapi.dev/v1/${namespace}/${key}/up`)
+        fetch('https://abacus.jasoncameron.dev/hit/flowfin-pro-phudit/visits')
             .then(res => res.json())
             .then(data => {
-                if (data && data.count) {
-                    $('visitor-count').innerText = data.count.toLocaleString();
+                if (data && data.value) {
+                    $('visitor-count').innerText = data.value.toLocaleString();
                 }
             }).catch(() => {
                 $('visitor-count').innerText = "N/A";
@@ -599,9 +603,8 @@
 
     $('submit-feedback').addEventListener('click', () => {
         const text = $('feedback-text').value.trim();
-        if (currentRating === 0) return showToast('กรุณาให้คะแนนดาวด้วยนะ!', true);
+        if (currentRating === 0) return showToast('กรุณาให้คะแนนดาวด้วยนะ!', 'error');
         
-        // ส่งข้อมูลไปที่ FormSubmit เพื่อส่งต่อเข้าอีเมลคุณ
         fetch(`https://formsubmit.co/ajax/${FEEDBACK_EMAIL}`, {
             method: "POST",
             headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
@@ -612,13 +615,41 @@
             })
         }).then(response => {
             if (response.ok) {
-                showToast(t('feedback_success'));
+                showToast(t('feedback_success'), 'success');
                 $('feedback-modal').classList.remove('show');
             } else {
-                showToast('ส่งไม่สำเร็จ ลองใหม่อีกครั้ง', true);
+                showToast('ส่งไม่สำเร็จ ลองใหม่อีกครั้ง', 'error');
             }
         }).catch(() => {
-            showToast('เกิดข้อผิดพลาดทางเน็ตเวิร์ค', true);
+            showToast('เกิดข้อผิดพลาดทางเน็ตเวิร์ค', 'error');
+        });
+    });
+
+    // --- OCR Slip Logic ---
+    $('scan-slip-btn').addEventListener('click', () => $('slip-input').click());
+    $('slip-input').addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        
+        showToast(t('toast_scanning'), 'loading');
+        
+        Tesseract.recognize(file, 'tha+eng', {
+            logger: m => console.log(m)
+        }).then(({ data: { text } }) => {
+            // ค้นหาตัวเลขที่มีทศนิยม 2 ตำแหน่ง (เช่น 100.00 หรือ 1,234.56)
+            const match = text.match(/(\d{1,3}(?:,\d{3})*\.\d{2})|(\d+\.\d{2})/);
+            if (match && match[0]) {
+                let amountStr = match[0].replace(/,/g, '');
+                $('amount').value = amountStr;
+                showToast(t('toast_scan_success'), 'success');
+            } else {
+                showToast(t('toast_scan_fail'), 'error');
+            }
+        }).catch(err => {
+            console.error(err);
+            showToast(t('toast_scan_error'), 'error');
+        }).finally(() => {
+            $('slip-input').value = ''; // reset input
         });
     });
 
@@ -634,11 +665,11 @@
     $('confirm-income').addEventListener('click', () => {
         const desc = $('income-desc').value.trim() || t('general_income');
         const amt = parseFloat($('income-amt').value.replace(/[^0-9.]/g, ''));
-        if (isNaN(amt) || amt <= 0) return showToast(t('toast_amount_req'), true);
+        if (isNaN(amt) || amt <= 0) return showToast(t('toast_amount_req'), 'error');
 
         state.transactions.unshift({ id: Date.now(), description: desc, amount: amt, type: 'income', dateStr: getDateStr(Date.now()), timestamp: Date.now() });
         save();
-        showToast(t('toast_saved'));
+        showToast(`${t('toast_received')} ${fmt(amt)}`, 'success');
         $('income-modal').classList.remove('show');
         renderAll();
     });
@@ -702,29 +733,29 @@
 
     $('budget-card').addEventListener('click', () => {
         const mainBal = calculateMainBalance();
-        if (mainBal <= 0) return showToast(t('toast_need_income'), true);
+        if (mainBal <= 0) return showToast(t('toast_need_income'), 'error');
         const input = prompt(t('prompt_budget'), state.dailyBudget || mainBal);
         if (input !== null) {
             const num = parseFloat(input) || 0;
-            if (num <= 0) return showToast(t('toast_budget_gt0'), true);
-            state.dailyBudget = num; save(); renderAll(); showToast(t('toast_budget_saved'));
+            if (num <= 0) return showToast(t('toast_budget_gt0'), 'error');
+            state.dailyBudget = num; save(); renderAll(); showToast(t('toast_budget_saved'), 'success');
         }
     });
 
     $('reset-budget-btn').addEventListener('click', () => {
-        state.dailyBudget = 0; save(); renderAll(); showToast(t('toast_budget_reset'));
+        state.dailyBudget = 0; save(); renderAll(); showToast(t('toast_budget_reset'), 'success');
     });
 
     const fmt = num => '฿' + (num || 0).toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,');
     const getLocale = () => state.lang === 'th' ? 'th-TH' : 'en-US';
     const getDateStr = (ts) => new Date(ts).toLocaleDateString(getLocale(), { day: '2-digit', month: 'short' });
 
-    // เพิ่มรายจ่าย (จากกล่องด้านล่าง)
     $('add-btn').addEventListener('click', () => {
         const desc = $('description').value.trim() || t('general_expense');
         const amt = parseFloat($('amount').value.replace(/[^0-9.]/g, ''));
-        if (isNaN(amt) || amt <= 0) return showToast(t('toast_amount_req'), true);
+        if (isNaN(amt) || amt <= 0) return showToast(t('toast_amount_req'), 'error');
 
+        let roundUpMsg = '';
         if ($('round-up-check').checked) {
             const roundedAmt = Math.ceil(amt / 10) * 10;
             const savingsAdded = roundedAmt - amt;
@@ -736,7 +767,7 @@
                 }
                 roundUpSav.current += savingsAdded;
                 state.transactions.unshift({ id: Date.now()+1, description: `${t('hide_money')}: ${t('round_up_sav_name')}`, amount: savingsAdded, type: 'expense', subtype: 'savings', dateStr: getDateStr(Date.now()), timestamp: Date.now() });
-                showToast(`${t('toast_round_up')} ${fmt(savingsAdded)}`);
+                roundUpMsg = `${t('toast_round_up')} ${fmt(savingsAdded)}`;
             }
         }
 
@@ -791,34 +822,39 @@
         
         save();
         $('description').value = ''; $('amount').value = ''; $('split-check').checked = false; $('split-box').classList.remove('active'); $('round-up-check').checked = false;
-        if (!toastTimer) showToast(t('toast_saved')); 
+        
+        if (roundUpMsg) {
+            showToast(`${t('toast_paid')} ${fmt(amt)} (${roundUpMsg})`, 'expense');
+        } else {
+            showToast(`${t('toast_paid')} ${fmt(amt)}`, 'expense');
+        }
         renderAll();
     });
 
     $('add-bill-btn').addEventListener('click', () => {
         const name = $('bill-name').value.trim(); const amount = parseFloat($('bill-amount').value); const day = parseInt($('bill-day').value);
-        if (!name || isNaN(amount) || isNaN(day) || day < 1 || day > 31) return showToast(t('toast_invalid_bill'), true);
+        if (!name || isNaN(amount) || isNaN(day) || day < 1 || day > 31) return showToast(t('toast_invalid_bill'), 'error');
         state.bills.push({ id: Date.now(), name, amount, dueDay: day, lastPaid: '' });
         save(); $('bill-name').value=''; $('bill-amount').value=''; $('bill-day').value='';
-        showToast(t('toast_bill_added')); renderAll();
+        showToast(t('toast_bill_added'), 'success'); renderAll();
     });
 
     $('add-inst-btn').addEventListener('click', () => {
         const name = $('inst-name').value.trim(); const monthly = parseFloat($('inst-monthly').value);
         const total = parseInt($('inst-total').value); const day = parseInt($('inst-day').value) || 1;
-        if (!name || isNaN(monthly) || isNaN(total)) return showToast(t('toast_invalid_inst'), true);
+        if (!name || isNaN(monthly) || isNaN(total)) return showToast(t('toast_invalid_inst'), 'error');
         state.installments.push({ id: Date.now(), name, monthly, totalMonths: total, paidMonths: 0, dueDay: day, lastPaidMonth: '' });
         save(); $('inst-name').value=''; $('inst-monthly').value=''; $('inst-total').value=''; $('inst-day').value='';
-        showToast(t('toast_inst_added')); renderAll();
+        showToast(t('toast_inst_added'), 'success'); renderAll();
     });
 
     $('add-sav-btn').addEventListener('click', () => {
         const name = $('sav-name').value.trim(); const amount = parseFloat($('sav-amount').value);
-        if (!name || isNaN(amount) || amount <= 0) return showToast(t('toast_invalid_sav'), true);
+        if (!name || isNaN(amount) || amount <= 0) return showToast(t('toast_invalid_sav'), 'error');
         state.savings.push({ id: Date.now(), name, current: amount });
         state.transactions.unshift({ id: Date.now()+1, description: `${t('hide_money')}: ${name}`, amount, type: 'expense', subtype: 'savings', dateStr: getDateStr(Date.now()), timestamp: Date.now() });
         save(); $('sav-name').value=''; $('sav-amount').value='';
-        showToast(t('toast_sav_added')); renderAll();
+        showToast(t('toast_sav_added'), 'success'); renderAll();
     });
 
     $('panic-btn').addEventListener('click', () => {
@@ -865,7 +901,7 @@
         if (price > 0) {
             state.transactions.unshift({ id: Date.now(), description: t('panic_buy'), amount: price, type: 'expense', dateStr: getDateStr(Date.now()), timestamp: Date.now() });
             save(); renderAll();
-            showToast(t('toast_saved'));
+            showToast(`${t('toast_paid')} ${fmt(price)}`, 'expense');
         }
         $('panic-modal').classList.remove('show');
     });
@@ -917,9 +953,10 @@
         if (!actionTarget) return;
         if (actionTarget.action === 'reset') {
             $('confirm-modal').classList.remove('show');
+            // แก้บัค Date.Now() เป็น Date.now()
             state = { transactions: [], installments: [], bills: [], savings: [], dailyBudget: 0, lang: state.lang, theme: state.theme, createdAt: Date.now() };
             save(); 
-            showToast(t('toast_reset_done'));
+            showToast(t('toast_reset_done'), 'success');
             renderAll();
         }
     });
@@ -939,7 +976,7 @@
                 if (sav) state.transactions.unshift({ id: Date.now(), description: `${t('cancel_hide_money')}: ${sav.name}`, amount: sav.current, type: 'income', subtype: 'savings', dateStr: getDateStr(Date.now()), timestamp: Date.now() });
                 state.savings = state.savings.filter(s => s.id !== id);
             }
-            showToast(t('toast_deleted'));
+            showToast(t('toast_deleted'), 'success');
             $('action-modal').classList.remove('show'); 
         } 
         else if (action === 'payInst') {
@@ -947,7 +984,7 @@
             if (inst && inst.paidMonths < inst.totalMonths) {
                 inst.paidMonths++; inst.lastPaidMonth = currentMonth;
                 state.transactions.unshift({ id: Date.now(), description: `${t('inst_paid_prefix')} ${inst.name} (${inst.paidMonths}/${inst.totalMonths})`, amount: inst.monthly, type: 'expense', subtype: 'inst', dateStr: getDateStr(Date.now()), timestamp: Date.now() });
-                showToast(t('toast_inst_paid'));
+                showToast(t('toast_inst_paid'), 'expense');
                 $('action-modal').classList.remove('show'); 
             }
         }
@@ -956,7 +993,7 @@
             if (bill) {
                 bill.lastPaid = currentMonth;
                 state.transactions.unshift({ id: Date.now(), description: `${t('bill_paid_prefix')} ${bill.name}`, amount: bill.amount, type: 'expense', subtype: 'bill', dateStr: getDateStr(Date.now()), timestamp: Date.now() });
-                showToast(t('toast_bill_paid'));
+                showToast(t('toast_bill_paid'), 'expense');
                 $('action-modal').classList.remove('show'); 
             }
         }
@@ -965,22 +1002,26 @@
             if (sav) {
                 state.transactions.unshift({ id: Date.now(), description: `${t('withdraw_prefix')}: ${sav.name}`, amount: sav.current, type: 'income', subtype: 'savings', dateStr: getDateStr(Date.now()), timestamp: Date.now() });
                 state.savings = state.savings.filter(s => s.id !== id);
-                showToast(t('toast_withdraw_done'));
+                showToast(t('toast_withdraw_done'), 'success');
                 $('action-modal').classList.remove('show'); 
             }
         }
         else if (action === 'payDebt') {
             const payVal = parseFloat($('action-amount').value.replace(/[^0-9.]/g, ''));
-            if (isNaN(payVal) || payVal <= 0) return showToast(t('toast_invalid_amount'), true);
+            if (isNaN(payVal) || payVal <= 0) return showToast(t('toast_invalid_amount'), 'error');
             const tx = state.transactions.find(t => t.id === id);
             if (!tx) return;
             const remaining = (tx.totalAmount || 0) - (tx.paidAmount || 0);
-            if (payVal > remaining) return showToast(t('toast_amount_exceeds'), true);
+            if (payVal > remaining) return showToast(t('toast_amount_exceeds'), 'error');
             tx.paidAmount = (tx.paidAmount || 0) + payVal;
             if (tx.paidAmount >= tx.totalAmount) tx.settled = true;
-            if (tx.subtype === 'lend') state.transactions.unshift({ id: Date.now(), description: t('friend_returned'), amount: payVal, type: 'income', dateStr: getDateStr(Date.now()), timestamp: Date.now() });
-            else state.transactions.unshift({ id: Date.now(), description: t('i_returned'), amount: payVal, type: 'expense', dateStr: getDateStr(Date.now()), timestamp: Date.now() });
-            showToast(t('toast_debt_settled'));
+            if (tx.subtype === 'lend') {
+                state.transactions.unshift({ id: Date.now(), description: t('friend_returned'), amount: payVal, type: 'income', dateStr: getDateStr(Date.now()), timestamp: Date.now() });
+                showToast(t('toast_debt_settled'), 'success');
+            } else {
+                state.transactions.unshift({ id: Date.now(), description: t('i_returned'), amount: payVal, type: 'expense', dateStr: getDateStr(Date.now()), timestamp: Date.now() });
+                showToast(t('toast_debt_settled'), 'expense');
+            }
             $('action-modal').classList.remove('show'); 
         }
         
@@ -1212,14 +1253,14 @@
         const a = document.createElement('a');
         a.href = url; a.download = "flowfin_export.csv"; a.click();
         URL.revokeObjectURL(url);
-        showToast(t('toast_exported'));
+        showToast(t('toast_exported'), 'success');
     });
 
     $('export-btn').addEventListener('click', () => {
         const dataStr = JSON.stringify(state); const blob = new Blob([dataStr], { type: "application/json" });
         const url = URL.createObjectURL(blob); const a = document.createElement('a');
         a.href = url; a.download = "flowfin_backup.json"; a.click(); URL.revokeObjectURL(url);
-        showToast(t('toast_exported'));
+        showToast(t('toast_exported'), 'success');
     });
 
     $('import-btn').addEventListener('click', () => $('import-file').click());
@@ -1233,9 +1274,9 @@
                 if (!state.lang) state.lang = 'th'; 
                 if (!state.theme) state.theme = 'light';
                 if (!state.createdAt) state.createdAt = Date.now();
-                save(); applyTheme(); applyTranslations(); renderAll(); showToast(t('toast_imported')); 
+                save(); applyTheme(); applyTranslations(); renderAll(); showToast(t('toast_imported'), 'success'); 
             }
-            catch (err) { showToast(t('toast_invalid_file'), true); }
+            catch (err) { showToast(t('toast_invalid_file'), 'error'); }
         }; reader.readAsText(file);
     });
 
@@ -1243,19 +1284,28 @@
         openConfirmModal(t('confirm_reset_title'), t('confirm_reset_desc'), {action: 'reset'}, true);
     });
 
-    function showToast(msg, isError = false) {
+    // ระบบแสดงสี Toast แบบแยกประเภท
+    // type: 'success' (เขียว), 'error' (แดง), 'expense' (แดง), 'loading' (เทา/เดิม)
+    function showToast(msg, type = 'success') {
         const tEl = $('toast');
         tEl.innerText = msg;
-        tEl.style.background = isError ? 'var(--expense-color)' : 'var(--text-main)';
+        if (type === 'error' || type === 'expense') {
+            tEl.style.background = 'var(--expense-color)'; // สีแดง
+        } else if (type === 'success') {
+            tEl.style.background = 'var(--income-color)'; // สีเขียว
+        } else {
+            tEl.style.background = 'var(--text-main)'; // สีเทา/ดำ สำหรับ loading
+        }
         tEl.style.color = 'white';
         tEl.classList.add('show');
         if (toastTimer) clearTimeout(toastTimer);
-        toastTimer = setTimeout(() => tEl.classList.remove('show'), 2000);
+        // ถ้าเป็น loading ให้แสดงนานหน่อย
+        const duration = (type === 'loading') ? 8000 : 2000; 
+        toastTimer = setTimeout(() => tEl.classList.remove('show'), duration);
     }
 
     function save() { safeSet('ff_state_v2', state); }
     
-    // Init
     applyTheme();
     applyTranslations();
     updateVisitorCount();
