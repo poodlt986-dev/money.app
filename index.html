@@ -60,6 +60,9 @@
         .balance.negative { color: var(--expense-color); }
         .balance-sub { font-size: 0.75rem; color: var(--text-muted); margin-top: 0.3rem; }
 
+        /* ปุ่มเพิ่มรายรับในกล่องยอดคงเหลือ */
+        .add-income-btn { position: absolute; top: 50%; right: 1.5rem; transform: translateY(-50%); background: var(--income-color); color: white; border: none; padding: 0.5rem 1rem; border-radius: 20px; font-weight: 600; font-size: 0.8rem; cursor: pointer; display: flex; align-items: center; gap: 0.3rem; box-shadow: 0 2px 8px rgba(52, 199, 89, 0.3); }
+        
         .notif-banner { background: var(--notif-bg); color: var(--notif-text); padding: 0.75rem 1rem; border-radius: 12px; margin-bottom: 1rem; font-size: 0.85rem; display: none; align-items: center; gap: 0.5rem; border: 1px solid var(--notif-border); }
         .notif-banner.show { display: flex; }
         .notif-banner i { color: var(--notif-icon); }
@@ -84,12 +87,9 @@
         .page.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        .card-box { background: var(--card-bg); padding: 1.2rem; border-radius: 16px; box-shadow: var(--shadow-sm); margin-bottom: 1rem; transition: background 0.3s; }
-        .type-toggle { display: flex; background: var(--toggle-bg); border-radius: 12px; padding: 4px; margin-bottom: 1rem; }
-        .type-toggle button { flex: 1; border: none; background: none; padding: 0.6rem; font-weight: 500; color: var(--text-muted); cursor: pointer; border-radius: 8px; font-size: 0.9rem; }
-        .type-toggle button.active.income { background: var(--income-color); color: white; }
-        .type-toggle button.active.expense { background: var(--expense-color); color: white; }
-
+        .card-box { background: var(--card-bg); padding: 1.2rem; border-radius: 16px; box-shadow: var(--shadow-sm); margin-bottom: 1rem; transition: background 0.3s; position: relative; }
+        .card-box-title { font-size: 0.9rem; font-weight: 600; color: var(--text-muted); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; }
+        
         .form-group { display: flex; gap: 0.5rem; margin-bottom: 0.8rem; }
         .input-field { flex: 1; padding: 0.8rem 1rem; border: 1px solid var(--border-color); border-radius: 12px; font-size: 0.95rem; outline: none; width: 100%; background: var(--input-bg); color: var(--text-main); transition: background 0.3s, border 0.3s; }
         .input-field:focus { border-color: var(--primary); }
@@ -161,8 +161,9 @@
         .btn-cancel { background: var(--toggle-bg); color: var(--text-main); }
         .btn-confirm { background: var(--primary); color: white; }
         .btn-confirm.danger { background: var(--expense-color); }
+        .btn-confirm.income { background: var(--income-color); }
 
-        .toast { position: fixed; bottom: -150px; left: 50%; transform: translateX(-50%); background: var(--text-main); color: var(--card-bg); padding: 0.75rem 1.5rem; border-radius: 100px; font-size: 0.85rem; box-shadow: 0 4px 12px rgba(0,0,0,0.15); transition: bottom 0.3s ease-out; z-index: 1500; max-width: 90%; text-align: center; pointer-events: none; opacity: 0; }
+        .toast { position: fixed; bottom: -150px; left: 50%; transform: translateX(-50%); background: var(--text-main); color: var(--card-bg); padding: 0.75rem 1.5rem; border-radius: 100px; font-size: 0.85rem; box-shadow: 0 4px 12px rgba(0,0,0,0.15); transition: bottom 0.3s ease-out; z-index: 3000; max-width: 90%; text-align: center; pointer-events: none; opacity: 0; }
         .toast.show { bottom: 100px; opacity: 1; }
         
         .empty-state { text-align: center; padding: 2rem 1rem; color: var(--text-muted); }
@@ -174,6 +175,12 @@
         .action-btn-sm.warn { background: rgba(255, 149, 0, 0.1); color: var(--warn-color); }
 
         .watermark { text-align: center; padding: 2rem 0 1rem; color: #c7c7cc; font-size: 0.75rem; font-weight: 500; letter-spacing: 1px; }
+        
+        .visitor-count-box { text-align: center; font-size: 0.8rem; color: var(--text-muted); margin-top: 1rem; }
+        .visitor-count-box span { color: var(--primary); font-weight: 700; }
+
+        .star-rating { display: flex; justify-content: center; gap: 0.5rem; font-size: 2rem; margin-bottom: 1rem; color: #ddd; }
+        .star-rating .star.active { color: #ffcc00; }
     </style>
 </head>
 <body>
@@ -187,6 +194,8 @@
         <h1 data-i18n="balance">ยอดเงินคงเหลือ</h1>
         <div class="balance" id="balance">฿0.00</div>
         <div class="balance-sub" id="balance-sub">เงินซ่อนไว้ ฿0.00</div>
+        <!-- ปุ่มเพิ่มรายรับ -->
+        <button class="add-income-btn" id="add-income-btn"><i class="fas fa-plus"></i> <span data-i18n="add_income">เพิ่มเงิน</span></button>
     </div>
 
     <div class="notif-banner" id="notif-banner">
@@ -220,11 +229,9 @@
             </div>
         </div>
 
+        <!-- กล่องรายจ่าย (เอาไว้ใช้แค่รายจ่ายอย่างเดียว) -->
         <div class="card-box">
-            <div class="type-toggle">
-                <button type="button" class="active expense" data-type="expense" data-i18n="expense">รายจ่าย</button>
-                <button type="button" class="income" data-type="income" data-i18n="income">รายรับ</button>
-            </div>
+            <div class="card-box-title"><i class="fas fa-arrow-up" style="color:var(--expense-color)"></i> <span data-i18n="expense">รายจ่าย</span></div>
             <div class="form-group">
                 <input type="text" id="description" class="input-field" data-i18n-ph="desc_ph" placeholder="รายการ (ไม่ใส่ก็ได้)">
             </div>
@@ -248,7 +255,7 @@
                     </select>
                 </div>
             </div>
-            <button type="button" class="btn-primary" id="add-btn"><i class="fas fa-plus"></i> <span data-i18n="add_tx">เพิ่มรายการ</span></button>
+            <button type="button" class="btn-primary" id="add-btn" style="background: var(--expense-color); color:white;"><i class="fas fa-plus"></i> <span data-i18n="add_expense">เพิ่มรายจ่าย</span></button>
         </div>
         <div class="section-title"><span data-i18n="recent_tx">รายการล่าสุด</span></div>
         <div id="recent-list"></div>
@@ -337,6 +344,12 @@
                 <input type="file" id="import-file" accept=".json" style="display:none;">
                 <button type="button" class="btn-warn" id="reset-budget-btn"><i class="fas fa-undo"></i> <span data-i18n="reset_budget">รีเซ็ตงบประมาณรายวัน</span></button>
                 <button type="button" class="btn-danger" id="reset-btn"><i class="fas fa-trash-alt"></i> <span data-i18n="reset_all">รีเซ็ตข้อมูลทั้งหมด</span></button>
+                
+                <button type="button" class="btn-secondary" id="feedback-btn" style="margin-top:1rem; background: rgba(0, 122, 255, 0.1); color: var(--primary);"><i class="fas fa-comment-dots"></i> <span data-i18n="feedback">ส่ง Feedback / ให้คะแนนแอป</span></button>
+                
+                <div class="visitor-count-box" id="visitor-box">
+                    <i class="fas fa-users"></i> <span data-i18n="total_users">ผู้ใช้งานรวม</span>: <span id="visitor-count">-</span> <span data-i18n="users_word">คน</span>
+                </div>
             </div>
         </div>
 
@@ -351,6 +364,44 @@
     <button type="button" class="nav-btn" data-page="history"><i class="fas fa-history"></i><span data-i18n="history">ประวัติ</span></button>
     <button type="button" class="nav-btn" data-page="finance"><i class="fas fa-wallet"></i><span data-i18n="finance">การเงิน</span><div class="badge-dot" id="finance-badge"></div></button>
 </nav>
+
+<!-- Modal เพิ่มรายรับ -->
+<div class="modal-overlay" id="income-modal">
+    <div class="modal-box">
+        <h3><i class="fas fa-arrow-down" style="color:var(--income-color)"></i> <span data-i18n="add_income">เพิ่มรายรับ</span></h3>
+        <div class="form-group">
+            <input type="text" id="income-desc" class="input-field" data-i18n-ph="desc_ph" placeholder="รายการ (ไม่ใส่ก็ได้)">
+        </div>
+        <div class="form-group">
+            <input type="text" id="income-amt" class="input-field" data-i18n-ph="amount_ph" placeholder="จำนวนเงิน" inputmode="decimal">
+        </div>
+        <div class="modal-actions">
+            <button class="btn-cancel" id="cancel-income" data-i18n="cancel">ยกเลิก</button>
+            <button class="btn-confirm income" id="confirm-income" data-i18n="confirm">ยืนยัน</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Feedback -->
+<div class="modal-overlay" id="feedback-modal">
+    <div class="modal-box">
+        <h3 data-i18n="feedback_title">ให้คะแนน & ความคิดเห็น</h3>
+        <div class="star-rating" id="star-rating">
+            <i class="far fa-star star" data-rating="1"></i>
+            <i class="far fa-star star" data-rating="2"></i>
+            <i class="far fa-star star" data-rating="3"></i>
+            <i class="far fa-star star" data-rating="4"></i>
+            <i class="far fa-star star" data-rating="5"></i>
+        </div>
+        <div class="form-group">
+            <textarea id="feedback-text" class="input-field" rows="3" data-i18n-ph="feedback_ph" placeholder="เขียนความคิดเห็นหรือบัคที่เจอมาได้ที่นี่..." style="resize:none; height: 80px;"></textarea>
+        </div>
+        <div class="modal-actions">
+            <button class="btn-cancel" id="cancel-feedback" data-i18n="cancel">ยกเลิก</button>
+            <button class="btn-confirm" id="submit-feedback" data-i18n="confirm">ส่งความคิดเห็น</button>
+        </div>
+    </div>
+</div>
 
 <div class="modal-overlay" id="confirm-modal">
     <div class="modal-box">
@@ -402,7 +453,7 @@
             saving_streak: "วันที่ประหยัดได้ (30 วันล่าสุด)", days_word: "วัน", streak_need_budget: "ตั้งงบประมาณก่อนถึงจะนับแต้มได้",
             bills_due_soon: "มีบิลใกล้ถึงกำหนด", upcoming_alert: "แจ้งเตือนล่วงหน้า:",
             home: "หน้าแรก", history: "ประวัติ", finance: "การเงิน",
-            expense: "รายจ่าย", income: "รายรับ", desc_ph: "รายการ (ไม่ใส่ก็ได้)", amount_ph: "จำนวนเงิน",
+            expense: "รายจ่าย", income: "รายรับ", desc_ph: "รายการ (ไม่ใส่ก็ได้)", amount_ph: "จำนวนเงิน", add_income: "เพิ่มเงิน", add_expense: "เพิ่มรายจ่าย",
             split_bill: "🍲 แชร์ค่าใช้จ่าย / ตั้งหนี้เพื่อน", people_ph: "จำนวนคน", friend_owes_me: "เพื่อนค้างจ่ายฉัน", i_owe_friend: "ฉันค้างจ่ายเพื่อน",
             round_up: "🐷 ปัดเศษเก็บออมอัตโนมัติ (เก็บเงินไว้ซ่อน)",
             add_tx: "เพิ่มรายการ", recent_tx: "รายการล่าสุด", all_history: "ประวัติทั้งหมด", edit_delete: "แก้ไข/ลบ", done: "เสร็จแล้ว",
@@ -410,7 +461,8 @@
             installments: "สินค้าผ่อนชำระ", item_name_ph: "ชื่อสินค้า (เช่น iPhone)", monthly_ph: "ค่างวด/เดือน", total_months_ph: "จำนวนงวด", add_inst: "เพิ่มรายการผ่อน",
             savings_goal: "เป้าหมายออม (ซ่อนเงิน)", goal_name_ph: "เป้าหมาย (เช่น ซื้อ iPad)", amount_to_hide_ph: "เอาไปซ่อนกี่บาท", hide_money: "เอาเงินไปซ่อน",
             debts: "หนี้ค้างจ่าย", backup_settings: "สำรองข้อมูล & ตั้งค่า", export_csv: "โหลดไฟล์ CSV (Excel)", export_data: "โหลดไฟล์สำรองข้อมูล", import_data: "นำเข้าไฟล์สำรองข้อมูล", reset_budget: "รีเซ็ตงบประมาณรายวัน", reset_all: "รีเซ็ตข้อมูลทั้งหมด",
-            confirm: "ยืนยัน", cancel: "ยกเลิก", action: "ทำรายการ",
+            confirm: "ยืนยัน", cancel: "ยกเลิก", action: "ทำรายการ", feedback: "ส่ง Feedback / ให้คะแนนแอป", total_users: "ผู้ใช้งานรวม", users_word: "คน",
+            feedback_title: "ให้คะแนน & ความคิดเห็น", feedback_ph: "เขียนความคิดเห็นหรือบัคที่เจอมาได้ที่นี่...", feedback_success: "ขอบคุณสำหรับ Feedback ครับ!",
             general_income: "รายรับทั่วไป", general_expense: "รายจ่ายทั่วไป", panic_buy: "ซื้อของฉุกเฉิน", panic_short: "ซื้อได้ไหม?",
             friend_returned: "เพื่อนคืนเงิน", i_returned: "ฉันคืนเงินเพื่อน",
             cancel_hide_money: "ยกเลิกการซ่อนเงิน", inst_paid_prefix: "ผ่อนชำระ", bill_paid_prefix: "จ่ายบิล", withdraw_prefix: "ถอนเงินออม",
@@ -435,7 +487,7 @@
             saving_streak: "Days saved (Last 30 days)", days_word: "Days", streak_need_budget: "Set a budget to track streak",
             bills_due_soon: "Bills due soon", upcoming_alert: "Upcoming alerts:",
             home: "Home", history: "History", finance: "Finance",
-            expense: "Expense", income: "Income", desc_ph: "Description (optional)", amount_ph: "Amount",
+            expense: "Expense", income: "Income", desc_ph: "Description (optional)", amount_ph: "Amount", add_income: "Add Money", add_expense: "Add Expense",
             split_bill: "🍲 Split bill / Track debt", people_ph: "No. of people", friend_owes_me: "Friend owes me", i_owe_friend: "I owe friend",
             round_up: "🐷 Auto Round-Up Saving",
             add_tx: "Add Transaction", recent_tx: "Recent Transactions", all_history: "All History", edit_delete: "Edit/Delete", done: "Done",
@@ -443,7 +495,8 @@
             installments: "Installments", item_name_ph: "Item name (e.g., iPhone)", monthly_ph: "Monthly payment", total_months_ph: "Total months", add_inst: "Add Installment",
             savings_goal: "Savings Goal (Hide money)", goal_name_ph: "Goal (e.g., Buy iPad)", amount_to_hide_ph: "Amount to hide", hide_money: "Hide Money",
             debts: "Debts", backup_settings: "Backup & Settings", export_csv: "Export CSV (Excel)", export_data: "Export Data", import_data: "Import Data", reset_budget: "Reset Daily Budget", reset_all: "Reset All Data",
-            confirm: "Confirm", cancel: "Cancel", action: "Action",
+            confirm: "Confirm", cancel: "Cancel", action: "Action", feedback: "Send Feedback / Rate App", total_users: "Total Users", users_word: "users",
+            feedback_title: "Rate & Review", feedback_ph: "Write your feedback or bugs here...", feedback_success: "Thank you for your feedback!",
             general_income: "General Income", general_expense: "General Expense", panic_buy: "Emergency Purchase", panic_short: "Can I buy?",
             friend_returned: "Friend returned money", i_returned: "I returned money",
             cancel_hide_money: "Cancel hiding money", inst_paid_prefix: "Installment for", bill_paid_prefix: "Paid bill", withdraw_prefix: "Withdrew savings",
@@ -481,9 +534,9 @@
     if (!state.lang) state.lang = 'th'; 
     if (!state.theme) state.theme = 'light';
     if (!state.createdAt) state.createdAt = Date.now();
-    let currentType = 'expense';
     let actionTarget = null;
     let toastTimer = null;
+    let currentRating = 0;
     const $ = id => document.getElementById(id);
     const t = key => translations[state.lang][key] || key;
 
@@ -503,6 +556,94 @@
         });
         $('lang-btn').innerText = state.lang === 'th' ? 'EN' : 'TH';
     }
+
+    function updateVisitorCount() {
+        const namespace = "flowfin-pro-phudit";
+        const key = "visits";
+        fetch(`https://api.counterapi.dev/v1/${namespace}/${key}/up`)
+            .then(res => res.json())
+            .then(data => {
+                if (data && data.count) {
+                    $('visitor-count').innerText = data.count.toLocaleString();
+                }
+            }).catch(() => {
+                $('visitor-count').innerText = "N/A";
+            });
+    }
+
+    // --- Feedback Logic (ส่งเข้าอีเมيلผู้สร้าง) ---
+    // ⚠️ แก้ไขอีเมล phudit.dev@email.com เป็นอีเมลจริงของคุณตรงนี้เพื่อรับ Feedback
+    const FEEDBACK_EMAIL = "poodlt986@gmail.com"; 
+
+    $('feedback-btn').addEventListener('click', () => {
+        currentRating = 0;
+        $('feedback-text').value = '';
+        document.querySelectorAll('.star-rating .star').forEach(s => {
+            s.classList.remove('active', 'fas'); s.classList.add('far');
+        });
+        $('feedback-modal').classList.add('show');
+    });
+
+    $('cancel-feedback').addEventListener('click', () => $('feedback-modal').classList.remove('show'));
+
+    document.querySelectorAll('.star-rating .star').forEach(star => {
+        star.addEventListener('click', () => {
+            currentRating = parseInt(star.dataset.rating);
+            document.querySelectorAll('.star-rating .star').forEach(s => {
+                if (parseInt(s.dataset.rating) <= currentRating) {
+                    s.classList.add('active', 'fas'); s.classList.remove('far');
+                } else {
+                    s.classList.remove('active', 'fas'); s.classList.add('far');
+                }
+            });
+        });
+    });
+
+    $('submit-feedback').addEventListener('click', () => {
+        const text = $('feedback-text').value.trim();
+        if (currentRating === 0) return showToast('กรุณาให้คะแนนดาวด้วยนะ!', true);
+        
+        // ส่งข้อมูลไปที่ FormSubmit เพื่อส่งต่อเข้าอีเมลคุณ
+        fetch(`https://formsubmit.co/ajax/${FEEDBACK_EMAIL}`, {
+            method: "POST",
+            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+            body: JSON.stringify({
+                _subject: "มี Feedback ใหม่จากแอป FlowFin!",
+                Rating: `${currentRating} ดาว`,
+                Feedback: text || '-'
+            })
+        }).then(response => {
+            if (response.ok) {
+                showToast(t('feedback_success'));
+                $('feedback-modal').classList.remove('show');
+            } else {
+                showToast('ส่งไม่สำเร็จ ลองใหม่อีกครั้ง', true);
+            }
+        }).catch(() => {
+            showToast('เกิดข้อผิดพลาดทางเน็ตเวิร์ค', true);
+        });
+    });
+
+    // --- Add Income Logic ---
+    $('add-income-btn').addEventListener('click', () => {
+        $('income-desc').value = '';
+        $('income-amt').value = '';
+        $('income-modal').classList.add('show');
+    });
+
+    $('cancel-income').addEventListener('click', () => $('income-modal').classList.remove('show'));
+
+    $('confirm-income').addEventListener('click', () => {
+        const desc = $('income-desc').value.trim() || t('general_income');
+        const amt = parseFloat($('income-amt').value.replace(/[^0-9.]/g, ''));
+        if (isNaN(amt) || amt <= 0) return showToast(t('toast_amount_req'), true);
+
+        state.transactions.unshift({ id: Date.now(), description: desc, amount: amt, type: 'income', dateStr: getDateStr(Date.now()), timestamp: Date.now() });
+        save();
+        showToast(t('toast_saved'));
+        $('income-modal').classList.remove('show');
+        renderAll();
+    });
 
     $('theme-btn').addEventListener('click', () => {
         state.theme = state.theme === 'dark' ? 'light' : 'dark';
@@ -524,14 +665,6 @@
             $('page-' + btn.dataset.page).classList.add('active');
             if (document.body.classList.contains('edit-mode')) toggleEditMode();
             renderAll();
-        });
-    });
-
-    document.querySelectorAll('.type-toggle button').forEach(btn => {
-        btn.addEventListener('click', () => {
-            document.querySelectorAll('.type-toggle button').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            currentType = btn.dataset.type;
         });
     });
 
@@ -588,12 +721,13 @@
     const getLocale = () => state.lang === 'th' ? 'th-TH' : 'en-US';
     const getDateStr = (ts) => new Date(ts).toLocaleDateString(getLocale(), { day: '2-digit', month: 'short' });
 
+    // เพิ่มรายจ่าย (จากกล่องด้านล่าง)
     $('add-btn').addEventListener('click', () => {
-        const desc = $('description').value.trim() || (currentType === 'income' ? t('general_income') : t('general_expense'));
+        const desc = $('description').value.trim() || t('general_expense');
         const amt = parseFloat($('amount').value.replace(/[^0-9.]/g, ''));
         if (isNaN(amt) || amt <= 0) return showToast(t('toast_amount_req'), true);
 
-        if (currentType === 'expense' && $('round-up-check').checked) {
+        if ($('round-up-check').checked) {
             const roundedAmt = Math.ceil(amt / 10) * 10;
             const savingsAdded = roundedAmt - amt;
             if (savingsAdded > 0) {
@@ -614,7 +748,6 @@
             const subtype = $('split-type').value;
             
             if (subtype === 'lend') {
-                // 1. Deduct full amount paid to the shop
                 state.transactions.unshift({
                     id: Date.now(),
                     description: desc,
@@ -624,7 +757,6 @@
                     timestamp: Date.now()
                 });
                 
-                // 2. Record debt owed by friends
                 const debtAmount = amt - myShare;
                 if (debtAmount > 0) {
                     state.transactions.unshift({
@@ -639,8 +771,7 @@
                         timestamp: Date.now()
                     });
                 }
-            } else { // borrow
-                // 1. Record debt owed to friend
+            } else {
                 if (myShare > 0) {
                     state.transactions.unshift({
                         id: Date.now(),
@@ -656,7 +787,7 @@
                 }
             }
         } else {
-            let newTx = { id: Date.now(), description: desc, amount: amt, type: currentType, dateStr: getDateStr(Date.now()), timestamp: Date.now() };
+            let newTx = { id: Date.now(), description: desc, amount: amt, type: 'expense', dateStr: getDateStr(Date.now()), timestamp: Date.now() };
             state.transactions.unshift(newTx);
         }
         
@@ -811,6 +942,7 @@
                 state.savings = state.savings.filter(s => s.id !== id);
             }
             showToast(t('toast_deleted'));
+            $('action-modal').classList.remove('show'); 
         } 
         else if (action === 'payInst') {
             let inst = state.installments.find(i => i.id === id);
@@ -818,6 +950,7 @@
                 inst.paidMonths++; inst.lastPaidMonth = currentMonth;
                 state.transactions.unshift({ id: Date.now(), description: `${t('inst_paid_prefix')} ${inst.name} (${inst.paidMonths}/${inst.totalMonths})`, amount: inst.monthly, type: 'expense', subtype: 'inst', dateStr: getDateStr(Date.now()), timestamp: Date.now() });
                 showToast(t('toast_inst_paid'));
+                $('action-modal').classList.remove('show'); 
             }
         }
         else if (action === 'payBill') {
@@ -826,6 +959,7 @@
                 bill.lastPaid = currentMonth;
                 state.transactions.unshift({ id: Date.now(), description: `${t('bill_paid_prefix')} ${bill.name}`, amount: bill.amount, type: 'expense', subtype: 'bill', dateStr: getDateStr(Date.now()), timestamp: Date.now() });
                 showToast(t('toast_bill_paid'));
+                $('action-modal').classList.remove('show'); 
             }
         }
         else if (action === 'withdrawSav') {
@@ -834,6 +968,7 @@
                 state.transactions.unshift({ id: Date.now(), description: `${t('withdraw_prefix')}: ${sav.name}`, amount: sav.current, type: 'income', subtype: 'savings', dateStr: getDateStr(Date.now()), timestamp: Date.now() });
                 state.savings = state.savings.filter(s => s.id !== id);
                 showToast(t('toast_withdraw_done'));
+                $('action-modal').classList.remove('show'); 
             }
         }
         else if (action === 'payDebt') {
@@ -848,8 +983,9 @@
             if (tx.subtype === 'lend') state.transactions.unshift({ id: Date.now(), description: t('friend_returned'), amount: payVal, type: 'income', dateStr: getDateStr(Date.now()), timestamp: Date.now() });
             else state.transactions.unshift({ id: Date.now(), description: t('i_returned'), amount: payVal, type: 'expense', dateStr: getDateStr(Date.now()), timestamp: Date.now() });
             showToast(t('toast_debt_settled'));
+            $('action-modal').classList.remove('show'); 
         }
-        $('action-modal').classList.remove('show'); 
+        
         save(); 
         renderAll();
     });
@@ -1121,8 +1257,10 @@
 
     function save() { safeSet('ff_state_v2', state); }
     
+    // Init
     applyTheme();
     applyTranslations();
+    updateVisitorCount();
     renderAll();
 </script>
 </body>
