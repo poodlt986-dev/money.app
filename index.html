@@ -96,7 +96,7 @@
         .input-field:focus { border-color: var(--primary); }
         
         /* ปุ่มสแกนสลิป */
-        .scan-slip-btn { position: absolute; right: 0.8rem; top: 50%; transform: translateY(-50%); background: var(--toggle-bg); color: var(--primary); border: none; width: 36px; height: 36px; border-radius: 50%; cursor: pointer; font-size: 0.9rem; display: flex; align-items: center; justify-content: center; }
+        .scan-slip-btn { position: absolute; right: 0.8rem; top: 50%; transform: translateY(-50%); background: var(--toggle-bg); color: var(--primary); border: none; width: 36px; height: 36px; border-radius: 50%; cursor: pointer; font-size: 0.9rem; display: flex; align-items: center; justify-content: center; z-index: 2; }
         .scan-slip-btn:active { transform: translateY(-50%) scale(0.95); }
 
         .btn-primary { background: var(--text-main); color: var(--card-bg); border: none; padding: 0.85rem; border-radius: 12px; font-weight: 600; width: 100%; cursor: pointer; font-size: 1rem; }
@@ -378,7 +378,9 @@
             <input type="text" id="income-desc" class="input-field" data-i18n-ph="desc_ph" placeholder="รายการ (ไม่ใส่ก็ได้)">
         </div>
         <div class="form-group">
-            <input type="text" id="income-amt" class="input-field" data-i18n-ph="amount_ph" placeholder="จำนวนเงิน" inputmode="decimal">
+            <input type="text" id="income-amt" class="input-field" data-i18n-ph="amount_ph" placeholder="จำนวนเงิน" inputmode="decimal" style="padding-right: 45px;">
+            <button class="scan-slip-btn" id="scan-slip-btn-income" title="สแกนสลิป"><i class="fas fa-camera"></i></button>
+            <input type="file" id="slip-input-income" accept="image/*" style="display:none;">
         </div>
         <div class="modal-actions">
             <button class="btn-cancel" id="cancel-income" data-i18n="cancel">ยกเลิก</button>
@@ -563,19 +565,32 @@
         $('lang-btn').innerText = state.lang === 'th' ? 'EN' : 'TH';
     }
 
+    // --- แก้ไขระบบนับผู้ใช้งานรวม ---
     function updateVisitorCount() {
-        fetch('https://abacus.jasoncameron.dev/hit/flowfin-pro-phudit/visits')
+        const visitedKey = 'ff_visited_flag';
+        let hasVisited = safeGet(visitedKey, false);
+        
+        // ถ้าเคยเข้ามาแล้ว ให้ดึงยอดไปแสดงผลอย่างเดียว (ไม่เพิ่ม)
+        // ถ้าเข้ามาครั้งแรก ให้เพิ่มยอด แล้วบันทึกว่าเคยเข้าแล้ว
+        const url = hasVisited 
+            ? 'https://abacus.jasoncameron.dev/get/flowfin-pro-phudit/visits' 
+            : 'https://abacus.jasoncameron.dev/hit/flowfin-pro-phudit/visits';
+            
+        fetch(url)
             .then(res => res.json())
             .then(data => {
                 if (data && data.value) {
                     $('visitor-count').innerText = data.value.toLocaleString();
+                    if (!hasVisited) {
+                        safeSet(visitedKey, true); // บันทึกว่านับแล้ว ไม่ต้องนับซ้ำ
+                    }
                 }
             }).catch(() => {
                 $('visitor-count').innerText = "N/A";
             });
     }
 
-    const FEEDBACK_EMAIL = "poodlt986@gmail.com"; 
+    const FEEDBACK_EMAIL = "poodlt986.gmail.com"; 
 
     $('feedback-btn').addEventListener('click', () => {
         currentRating = 0;
@@ -625,23 +640,21 @@
         });
     });
 
-    // --- OCR Slip Logic ---
+    // --- OCR Slip Logic (สำหรับรายจ่าย) ---
     $('scan-slip-btn').addEventListener('click', () => $('slip-input').click());
     $('slip-input').addEventListener('change', (e) => {
         const file = e.target.files[0];
         if (!file) return;
         
-        showToast(t('toast_scanning'), 'loading');
+        // แจ้งเตือนสีส้ม (warn) ตอนกำลังอ่านสลิป
+        showToast(t('toast_scanning'), 'warn');
         
-        Tesseract.recognize(file, 'tha+eng', {
-            logger: m => console.log(m)
-        }).then(({ data: { text } }) => {
-            // ค้นหาตัวเลขที่มีทศนิยม 2 ตำแหน่ง (เช่น 100.00 หรือ 1,234.56)
+        Tesseract.recognize(file, 'tha+eng', { logger: m => console.log(m) }).then(({ data: { text } }) => {
             const match = text.match(/(\d{1,3}(?:,\d{3})*\.\d{2})|(\d+\.\d{2})/);
             if (match && match[0]) {
                 let amountStr = match[0].replace(/,/g, '');
                 $('amount').value = amountStr;
-                showToast(t('toast_scan_success'), 'success');
+                showToast(t('toast_scan_success'), 'expense'); // สำเร็จแล้วเด้งเป็นสีแดง (เพราะเป็นรายจ่าย)
             } else {
                 showToast(t('toast_scan_fail'), 'error');
             }
@@ -649,7 +662,33 @@
             console.error(err);
             showToast(t('toast_scan_error'), 'error');
         }).finally(() => {
-            $('slip-input').value = ''; // reset input
+            $('slip-input').value = ''; 
+        });
+    });
+
+    // --- OCR Slip Logic (สำหรับรายรับ) ---
+    $('scan-slip-btn-income').addEventListener('click', () => $('slip-input-income').click());
+    $('slip-input-income').addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        
+        // แจ้งเตือนสีส้ม (warn) ตอนกำลังอ่านสลิป
+        showToast(t('toast_scanning'), 'warn');
+        
+        Tesseract.recognize(file, 'tha+eng', { logger: m => console.log(m) }).then(({ data: { text } }) => {
+            const match = text.match(/(\d{1,3}(?:,\d{3})*\.\d{2})|(\d+\.\d{2})/);
+            if (match && match[0]) {
+                let amountStr = match[0].replace(/,/g, '');
+                $('income-amt').value = amountStr;
+                showToast(t('toast_scan_success'), 'success'); // สำเร็จแล้วเด้งเป็นสีเขียว (เพราะเป็นรายรับ)
+            } else {
+                showToast(t('toast_scan_fail'), 'error');
+            }
+        }).catch(err => {
+            console.error(err);
+            showToast(t('toast_scan_error'), 'error');
+        }).finally(() => {
+            $('slip-input-income').value = ''; 
         });
     });
 
@@ -777,42 +816,14 @@
             const subtype = $('split-type').value;
             
             if (subtype === 'lend') {
-                state.transactions.unshift({
-                    id: Date.now(),
-                    description: desc,
-                    amount: amt, 
-                    type: 'expense',
-                    dateStr: getDateStr(Date.now()),
-                    timestamp: Date.now()
-                });
-                
+                state.transactions.unshift({ id: Date.now(), description: desc, amount: amt, type: 'expense', dateStr: getDateStr(Date.now()), timestamp: Date.now() });
                 const debtAmount = amt - myShare;
                 if (debtAmount > 0) {
-                    state.transactions.unshift({
-                        id: Date.now() + 1,
-                        description: `${desc} (${t('people_ph').split(' ')[0]} ${people})`,
-                        type: 'debt',
-                        subtype: 'lend',
-                        totalAmount: debtAmount,
-                        paidAmount: 0,
-                        settled: false,
-                        dateStr: getDateStr(Date.now()),
-                        timestamp: Date.now()
-                    });
+                    state.transactions.unshift({ id: Date.now() + 1, description: `${desc} (${t('people_ph').split(' ')[0]} ${people})`, type: 'debt', subtype: 'lend', totalAmount: debtAmount, paidAmount: 0, settled: false, dateStr: getDateStr(Date.now()), timestamp: Date.now() });
                 }
             } else {
                 if (myShare > 0) {
-                    state.transactions.unshift({
-                        id: Date.now(),
-                        description: `${desc} (${t('people_ph').split(' ')[0]} ${people})`,
-                        type: 'debt',
-                        subtype: 'borrow',
-                        totalAmount: myShare,
-                        paidAmount: 0,
-                        settled: false,
-                        dateStr: getDateStr(Date.now()),
-                        timestamp: Date.now()
-                    });
+                    state.transactions.unshift({ id: Date.now(), description: `${desc} (${t('people_ph').split(' ')[0]} ${people})`, type: 'debt', subtype: 'borrow', totalAmount: myShare, paidAmount: 0, settled: false, dateStr: getDateStr(Date.now()), timestamp: Date.now() });
                 }
             }
         } else {
@@ -953,7 +964,7 @@
         if (!actionTarget) return;
         if (actionTarget.action === 'reset') {
             $('confirm-modal').classList.remove('show');
-            // แก้บัค Date.Now() เป็น Date.now()
+            // แก้ไข Date.Now() เป็น Date.now() ตัวเล็ก
             state = { transactions: [], installments: [], bills: [], savings: [], dailyBudget: 0, lang: state.lang, theme: state.theme, createdAt: Date.now() };
             save(); 
             showToast(t('toast_reset_done'), 'success');
@@ -1285,7 +1296,7 @@
     });
 
     // ระบบแสดงสี Toast แบบแยกประเภท
-    // type: 'success' (เขียว), 'error' (แดง), 'expense' (แดง), 'loading' (เทา/เดิม)
+    // type: 'success' (เขียว), 'error' (แดง), 'expense' (แดง), 'warn' (ส้ม/เหลือง)
     function showToast(msg, type = 'success') {
         const tEl = $('toast');
         tEl.innerText = msg;
@@ -1293,14 +1304,15 @@
             tEl.style.background = 'var(--expense-color)'; // สีแดง
         } else if (type === 'success') {
             tEl.style.background = 'var(--income-color)'; // สีเขียว
+        } else if (type === 'warn') {
+            tEl.style.background = 'var(--warn-color)'; // สีส้ม/เหลือง
         } else {
-            tEl.style.background = 'var(--text-main)'; // สีเทา/ดำ สำหรับ loading
+            tEl.style.background = 'var(--text-main)'; // สีดำ/เทา
         }
         tEl.style.color = 'white';
         tEl.classList.add('show');
         if (toastTimer) clearTimeout(toastTimer);
-        // ถ้าเป็น loading ให้แสดงนานหน่อย
-        const duration = (type === 'loading') ? 8000 : 2000; 
+        const duration = (type === 'warn') ? 10000 : 2000; // ถ้าเป็นสีส้ม (กำลังโหลด) ให้แสดงนานหน่อย
         toastTimer = setTimeout(() => tEl.classList.remove('show'), duration);
     }
 
